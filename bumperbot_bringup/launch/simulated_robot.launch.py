@@ -71,32 +71,23 @@ def generate_launch_description():
         condition=IfCondition(use_slam)
     )
 
-    rviz_localization = Node(
-        package="rviz2",
-        executable="rviz2",
-        arguments=["-d", os.path.join(
-                get_package_share_directory("bumperbot_localization"),
-                "rviz",
-                "global_localization.rviz"
-            )
-        ],
-        output="screen",
-        parameters=[{"use_sim_time": True}],
-        condition=UnlessCondition(use_slam)
+    navigation = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("bumperbot_navigation"),
+            "launch",
+            "navigation.launch.py"
+        ),
+        launch_arguments={
+            "use_sim_time": "True"
+        }.items()
     )
 
-    rviz_slam = Node(
-        package="rviz2",
-        executable="rviz2",
-        arguments=["-d", os.path.join(
-                get_package_share_directory("bumperbot_mapping"),
-                "rviz",
-                "slam.rviz"
-            )
-        ],
-        output="screen",
-        parameters=[{"use_sim_time": True}],
-        condition=IfCondition(use_slam)
+    navigation_rviz = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("nav2_bringup"),
+            "launch",
+            "rviz_launch.py"
+        )
     )
     
     return LaunchDescription([
@@ -107,6 +98,6 @@ def generate_launch_description():
         safety_stop,
         localization,
         slam,
-        rviz_localization,
-        rviz_slam
+        navigation,
+        navigation_rviz
     ])
