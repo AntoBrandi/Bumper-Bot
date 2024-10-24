@@ -9,6 +9,11 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>rclcpp</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>nav2_controller</exec_depend>
   <exec_depend>nav2_planner</exec_depend>
