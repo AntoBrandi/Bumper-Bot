@@ -21,11 +21,11 @@ DijkstraPlanner::DijkstraPlanner() : Node("dijkstra_node")
         "/goal_pose", 10, std::bind(&DijkstraPlanner::goalCallback, this, std::placeholders::_1));
 
     path_pub_ = create_publisher<nav_msgs::msg::Path>(
-        "/dijkstra_path", 10
+        "/dijkstra/path", 10
     );
 
     map_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(
-        "/visited_map", 10
+        "/dijkstra/visited_map", 10
     );
 }
 
@@ -59,7 +59,7 @@ void DijkstraPlanner::goalCallback(const geometry_msgs::msg::PoseStamped::Shared
     map_to_base_pose.position.y = map_to_base_tf.transform.translation.y;
     map_to_base_pose.orientation = map_to_base_tf.transform.rotation;
 
-    auto path = dijkstra(map_to_base_pose, pose->pose);
+    auto path = plan(map_to_base_pose, pose->pose);
     if (!path.poses.empty()) {
         RCLCPP_INFO(this->get_logger(), "Shortest path found!");
         path_pub_->publish(path);
@@ -68,7 +68,7 @@ void DijkstraPlanner::goalCallback(const geometry_msgs::msg::PoseStamped::Shared
     }
 }
 
-nav_msgs::msg::Path DijkstraPlanner::dijkstra(const geometry_msgs::msg::Pose & start, const geometry_msgs::msg::Pose & goal)
+nav_msgs::msg::Path DijkstraPlanner::plan(const geometry_msgs::msg::Pose & start, const geometry_msgs::msg::Pose & goal)
 {
     std::vector<std::pair<int, int>> explore_directions = {
         {-1, 0}, {1, 0}, {0, -1}, {0, 1}
@@ -98,7 +98,6 @@ nav_msgs::msg::Path DijkstraPlanner::dijkstra(const geometry_msgs::msg::Pose & s
                 map_->data.at(poseToCell(new_node)) >= 0) {
                 // If the node is not visited, add it to the queue
                 new_node.cost = active_node.cost + 1 + map_->data.at(poseToCell(new_node));
-                std::cerr << "New cost:" << new_node.cost << std::endl;
                 new_node.prev = std::make_shared<GraphNode>(active_node);
                 pending_nodes.push(new_node);
                 visited_nodes.push_back(new_node);

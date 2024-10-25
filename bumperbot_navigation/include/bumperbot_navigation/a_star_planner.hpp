@@ -1,5 +1,5 @@
-#ifndef DIJKSTRA_PLANNER_HPP
-#define DIJKSTRA_PLANNER_HPP
+#ifndef A_STAR_PLANNER_HPP
+#define A_STAR_PLANNER_HPP
 
 #include <memory>
 
@@ -19,6 +19,7 @@ struct GraphNode
     int x;
     int y;
     int cost;
+    double heuristic;
     std::shared_ptr<GraphNode> prev;
 
     GraphNode() : GraphNode(0,0) {}
@@ -26,7 +27,7 @@ struct GraphNode
     GraphNode(int in_x, int in_y) : x(in_x), y(in_y), cost(0){}
 
     bool operator>(const GraphNode & other) const { 
-        return cost > other.cost;
+        return cost + heuristic > other.cost + other.heuristic;
     }
 
     bool operator==(const GraphNode & other) const {
@@ -39,10 +40,10 @@ struct GraphNode
     }
 };
 
-class DijkstraPlanner : public rclcpp::Node
+class AStarPlanner : public rclcpp::Node
 {
 public:
-    DijkstraPlanner();
+    AStarPlanner();
 
 private:
     rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr map_sub_;
@@ -69,7 +70,9 @@ private:
     geometry_msgs::msg::Pose gridToWorld(const GraphNode & node);
 
     unsigned int poseToCell(const GraphNode & node);
+
+    double manhattanDistance(const GraphNode &node, const GraphNode &goal_node);
 };
 }  // namespace bumperbot_navigation
 
-#endif // DIJKSTRA_PLANNER_HPP
+#endif // A_STAR_PLANNER_HPP

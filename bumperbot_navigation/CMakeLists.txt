@@ -19,6 +19,12 @@ ament_target_dependencies(dijkstra_planner rclcpp nav_msgs geometry_msgs tf2_ros
 add_executable(dijkstra_planner_costmap src/dijkstra_planner_costmap.cpp)
 ament_target_dependencies(dijkstra_planner_costmap rclcpp nav_msgs geometry_msgs tf2_ros)
 
+add_executable(a_star_planner src/a_star_planner.cpp)
+ament_target_dependencies(a_star_planner rclcpp nav_msgs geometry_msgs tf2_ros)
+
+add_executable(a_star_planner_costmap src/a_star_planner_costmap.cpp)
+ament_target_dependencies(a_star_planner_costmap rclcpp nav_msgs geometry_msgs tf2_ros)
+
 install(
   DIRECTORY include
   DESTINATION include
@@ -27,6 +33,8 @@ install(
 install(TARGETS
   dijkstra_planner
   dijkstra_planner_costmap
+  a_star_planner
+  a_star_planner_costmap
   DESTINATION lib/${PROJECT_NAME}
 )
 

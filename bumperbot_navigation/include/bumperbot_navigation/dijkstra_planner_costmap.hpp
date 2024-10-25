@@ -60,7 +60,7 @@ private:
 
     void goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr pose);
 
-    nav_msgs::msg::Path dijkstra(const geometry_msgs::msg::Pose & start, const geometry_msgs::msg::Pose & goal);
+    nav_msgs::msg::Path plan(const geometry_msgs::msg::Pose & start, const geometry_msgs::msg::Pose & goal);
 
     bool poseOnMap(const GraphNode & node);
 

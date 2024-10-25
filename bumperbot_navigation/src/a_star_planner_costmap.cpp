@@ -1,13 +1,13 @@
 #include <queue>
 #include <vector>
 
-#include "bumperbot_navigation/dijkstra_planner.hpp"
+#include "bumperbot_navigation/a_star_planner.hpp"
 #include "rmw/qos_profiles.h"
 
 
 namespace bumperbot_navigation
 {
-DijkstraPlanner::DijkstraPlanner() : Node("dijkstra_node")
+AStarPlanner::AStarPlanner() : Node("a_star_node")
 {
     tf_buffer_ = std::make_unique<tf2_ros::Buffer>(get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
@@ -15,21 +15,21 @@ DijkstraPlanner::DijkstraPlanner() : Node("dijkstra_node")
     rclcpp::QoS map_qos(10);
     map_qos.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
     map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
-        "/map", map_qos, std::bind(&DijkstraPlanner::mapCallback, this, std::placeholders::_1));
+        "/global_costmap/costmap", map_qos, std::bind(&AStarPlanner::mapCallback, this, std::placeholders::_1));
 
     pose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
-        "/goal_pose", 10, std::bind(&DijkstraPlanner::goalCallback, this, std::placeholders::_1));
+        "/goal_pose", 10, std::bind(&AStarPlanner::goalCallback, this, std::placeholders::_1));
 
     path_pub_ = create_publisher<nav_msgs::msg::Path>(
-        "/dijkstra/path", 10
+        "/a_star/path", 10
     );
 
     map_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(
-        "/dijkstra/visited_map", 10
+        "/a_star/visited_map", 10
     );
 }
 
-void DijkstraPlanner::mapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr map)
+void AStarPlanner::mapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr map)
 {
     map_ = map;
     visited_map_.header.frame_id = map->header.frame_id;
@@ -37,7 +37,7 @@ void DijkstraPlanner::mapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr 
     visited_map_.data = std::vector<int8_t>(visited_map_.info.height * visited_map_.info.width, -1);
 }
 
-void DijkstraPlanner::goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr pose)
+void AStarPlanner::goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr pose)
 {
     if(!map_){
         RCLCPP_ERROR(get_logger(), "No map received!");
@@ -68,16 +68,21 @@ void DijkstraPlanner::goalCallback(const geometry_msgs::msg::PoseStamped::Shared
     }
 }
 
-nav_msgs::msg::Path DijkstraPlanner::plan(const geometry_msgs::msg::Pose & start, const geometry_msgs::msg::Pose & goal)
+nav_msgs::msg::Path AStarPlanner::plan(const geometry_msgs::msg::Pose & start, const geometry_msgs::msg::Pose & goal)
 {
+    // Define possible movement directions
     std::vector<std::pair<int, int>> explore_directions = {
         {-1, 0}, {1, 0}, {0, -1}, {0, 1}
     };
 
+    // Priority queue with custom comparison for A* based on cost + heuristic
     std::priority_queue<GraphNode, std::vector<GraphNode>, std::greater<GraphNode>> pending_nodes;
     std::vector<GraphNode> visited_nodes;
 
-    pending_nodes.push(worldToGrid(start));
+    GraphNode start_node = worldToGrid(start);
+    GraphNode goal_node = worldToGrid(goal);
+    start_node.heuristic = manhattanDistance(start_node, goal_node); // Heuristic calculation
+    pending_nodes.push(start_node);
 
     GraphNode active_node;
     while (!pending_nodes.empty() && rclcpp::ok()) {
@@ -85,31 +90,35 @@ nav_msgs::msg::Path DijkstraPlanner::plan(const geometry_msgs::msg::Pose & start
         pending_nodes.pop();
 
         // Goal found!
-        if(worldToGrid(goal) == active_node){
+        if (active_node == goal_node) {
             break;
         }
 
         // Explore neighbors
         for (const auto & dir : explore_directions) {
             GraphNode new_node = active_node + dir;
-            // Check if the new position is within bounds and not an obstacle
+
             if (std::find(visited_nodes.begin(), visited_nodes.end(), new_node) == visited_nodes.end() &&
-                poseOnMap(new_node) && map_->data.at(poseToCell(new_node)) == 0) {
-                // If the node is not visited, add it to the queue
-                new_node.cost = active_node.cost + 1;
+                poseOnMap(new_node) && map_->data.at(poseToCell(new_node)) < 99 &&
+                map_->data.at(poseToCell(new_node)) >= 0) {
+                
+                new_node.cost = active_node.cost + 1 + map_->data.at(poseToCell(new_node));
+                new_node.heuristic = manhattanDistance(new_node, goal_node);
                 new_node.prev = std::make_shared<GraphNode>(active_node);
+                
                 pending_nodes.push(new_node);
                 visited_nodes.push_back(new_node);
             }
         }
 
-        visited_map_.data.at(poseToCell(active_node)) = 10;  // Blue
+        visited_map_.data.at(poseToCell(active_node)) = 150;  // Orange
         map_pub_->publish(visited_map_);
     }
 
+    // Reconstruct path if goal was reached
     nav_msgs::msg::Path path;
     path.header.frame_id = map_->header.frame_id;
-    while(active_node.prev && rclcpp::ok()) {
+    while (active_node.prev && rclcpp::ok()) {
         geometry_msgs::msg::Pose last_pose = gridToWorld(active_node);
         geometry_msgs::msg::PoseStamped last_pose_stamped;
         last_pose_stamped.header.frame_id = map_->header.frame_id;
@@ -117,24 +126,29 @@ nav_msgs::msg::Path DijkstraPlanner::plan(const geometry_msgs::msg::Pose & start
         path.poses.push_back(last_pose_stamped);
         active_node = *active_node.prev;
     }
-    
+
     return path;
 }
 
-bool DijkstraPlanner::poseOnMap(const GraphNode & node)
+double AStarPlanner::manhattanDistance(const GraphNode &node, const GraphNode &goal_node)
+{
+    return abs(node.x - goal_node.x) + abs(node.y - goal_node.y);
+}
+
+bool AStarPlanner::poseOnMap(const GraphNode & node)
 {
     return node.x < static_cast<int>(map_->info.width) && node.x >= 0 &&
         node.y < static_cast<int>(map_->info.height) && node.y >= 0;
 }
 
-GraphNode DijkstraPlanner::worldToGrid(const geometry_msgs::msg::Pose & pose)
+GraphNode AStarPlanner::worldToGrid(const geometry_msgs::msg::Pose & pose)
 {
     int grid_x = static_cast<int>((pose.position.x - map_->info.origin.position.x) / map_->info.resolution);
     int grid_y = static_cast<int>((pose.position.y - map_->info.origin.position.y) / map_->info.resolution);
     return GraphNode(grid_x, grid_y);
 }
 
-geometry_msgs::msg::Pose DijkstraPlanner::gridToWorld(const GraphNode & node)
+geometry_msgs::msg::Pose AStarPlanner::gridToWorld(const GraphNode & node)
 {
     geometry_msgs::msg::Pose pose;
     pose.position.x = node.x * map_->info.resolution + map_->info.origin.position.x;
@@ -142,7 +156,7 @@ geometry_msgs::msg::Pose DijkstraPlanner::gridToWorld(const GraphNode & node)
     return pose;
 }
 
-unsigned int DijkstraPlanner::poseToCell(const GraphNode & node)
+unsigned int AStarPlanner::poseToCell(const GraphNode & node)
 {
     return map_->info.width * node.y + node.x;
 }
@@ -152,7 +166,7 @@ unsigned int DijkstraPlanner::poseToCell(const GraphNode & node)
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<bumperbot_navigation::DijkstraPlanner>();
+    auto node = std::make_shared<bumperbot_navigation::AStarPlanner>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
