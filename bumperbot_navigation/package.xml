@@ -13,6 +13,9 @@
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>nav2_core</depend>
+  <depend>nav2_costmap_2d</depend>
+  <depend>nav2_util</depend>
 
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>nav2_controller</exec_depend>
@@ -26,5 +29,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <nav2_core plugin="${prefix}/global_planner_plugin.xml" />
   </export>
 </package>

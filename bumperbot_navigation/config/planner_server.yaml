@@ -1,13 +1,15 @@
 planner_server:
   ros__parameters:
-    expected_planner_frequency: 20.0
+    expected_planner_frequency: 1.0
     use_sim_time: true
     planner_plugins: ["GridBased"]
+    # GridBased:
+    #   plugin: "nav2_navfn_planner/NavfnPlanner"
+    #   tolerance: 0.5
+    #   use_astar: false
+    #   allow_unknown: true
     GridBased:
-      plugin: "nav2_navfn_planner/NavfnPlanner"
-      tolerance: 0.5
-      use_astar: false
-      allow_unknown: true
+      plugin: "bumperbot_navigation/AStarPlanner"
 
 global_costmap:
   global_costmap:

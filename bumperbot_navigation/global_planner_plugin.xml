@@ -1,0 +1,12 @@
+<class_libraries>
+	<library path="dijkstra_planner_plugin">
+		<class name="bumperbot_navigation/DijkstraPlanner" type="bumperbot_navigation::DijkstraPlanner" base_class_type="nav2_core::GlobalPlanner">
+		  <description>Simple Dijkstra Planner.</description>
+		</class>
+	</library>
+	<library path="a_star_planner_plugin">
+		<class name="bumperbot_navigation/AStarPlanner" type="bumperbot_navigation::AStarPlanner" base_class_type="nav2_core::GlobalPlanner">
+		  <description>Simple A* Planner.</description>
+		</class>
+	</library>
+</class_libraries>
