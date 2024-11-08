@@ -1,9 +1,9 @@
 #include <cmath>
 #include <chrono>
 
-#include "bumperbot_navigation/nav2_dijkstra_planner.hpp"
+#include "bumperbot_planning/path_planning/nav2_dijkstra_planner.hpp"
 
-namespace bumperbot_navigation
+namespace bumperbot_planning
 {
 
 void DijkstraPlanner::configure(
@@ -144,7 +144,7 @@ unsigned int DijkstraPlanner::poseToCell(const GraphNode & node)
     return costmap_->getOriginX() * node.y + node.x;
 }
 
-}  // namespace bumperbot_navigation
+}  // namespace bumperbot_planning
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(bumperbot_navigation::DijkstraPlanner, nav2_core::GlobalPlanner)
+PLUGINLIB_EXPORT_CLASS(bumperbot_planning::DijkstraPlanner, nav2_core::GlobalPlanner)

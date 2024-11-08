@@ -9,7 +9,7 @@ planner_server:
     #   use_astar: false
     #   allow_unknown: true
     GridBased:
-      plugin: "bumperbot_navigation/AStarPlanner"
+      plugin: "bumperbot_planning/AStarPlanner"
 
 global_costmap:
   global_costmap:

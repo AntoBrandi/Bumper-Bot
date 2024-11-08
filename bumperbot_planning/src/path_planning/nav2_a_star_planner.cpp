@@ -1,8 +1,8 @@
 #include <cmath>
 
-#include "bumperbot_navigation/nav2_a_star_planner.hpp"
+#include "bumperbot_planning/path_planning/nav2_a_star_planner.hpp"
 
-namespace bumperbot_navigation
+namespace bumperbot_planning
 {
 
 void AStarPlanner::configure(
@@ -148,7 +148,7 @@ unsigned int AStarPlanner::poseToCell(const GraphNode & node)
     return costmap_->getOriginX() * node.y + node.x;
 }
 
-}  // namespace bumperbot_navigation
+}  // namespace bumperbot_planning
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(bumperbot_navigation::AStarPlanner, nav2_core::GlobalPlanner)
+PLUGINLIB_EXPORT_CLASS(bumperbot_planning::AStarPlanner, nav2_core::GlobalPlanner)

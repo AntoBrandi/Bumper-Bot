@@ -16,7 +16,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_msgs/action/smooth_path.hpp"
 
-namespace bumperbot_navigation
+namespace bumperbot_planning
 {
 struct GraphNode
 {
@@ -82,6 +82,6 @@ private:
   unsigned int poseToCell(const GraphNode & node);
 };
 
-}  // namespace bumperbot_navigation
+}  // namespace bumperbot_planning
 
 #endif  // DIJKSTRA_PLANNER_HPP

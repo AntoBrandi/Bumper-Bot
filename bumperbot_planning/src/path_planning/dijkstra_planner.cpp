@@ -1,11 +1,11 @@
 #include <queue>
 #include <vector>
 
-#include "bumperbot_navigation/dijkstra_planner.hpp"
+#include "bumperbot_planning/path_planning/dijkstra_planner.hpp"
 #include "rmw/qos_profiles.h"
 
 
-namespace bumperbot_navigation
+namespace bumperbot_planning
 {
 DijkstraPlanner::DijkstraPlanner() : Node("dijkstra_node")
 {
@@ -48,10 +48,11 @@ void DijkstraPlanner::goalCallback(const geometry_msgs::msg::PoseStamped::Shared
 
     geometry_msgs::msg::TransformStamped map_to_base_tf;
     try {
-      map_to_base_tf = tf_buffer_->lookupTransform("map", "base_footprint", tf2::TimePointZero);
+        map_to_base_tf = tf_buffer_->lookupTransform(
+            map_->header.frame_id, "base_footprint", tf2::TimePointZero);
     } catch (const tf2::TransformException & ex) {
-      RCLCPP_ERROR(get_logger(), "Could not transform from map to base_footprint");
-      return;
+        RCLCPP_ERROR(get_logger(), "Could not transform from map to base_footprint");
+        return;
     }
 
     geometry_msgs::msg::Pose map_to_base_pose;
@@ -146,13 +147,13 @@ unsigned int DijkstraPlanner::poseToCell(const GraphNode & node)
 {
     return map_->info.width * node.y + node.x;
 }
-}  // namespace bumperbot_navigation
+}  // namespace bumperbot_planning
 
 
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<bumperbot_navigation::DijkstraPlanner>();
+    auto node = std::make_shared<bumperbot_planning::DijkstraPlanner>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

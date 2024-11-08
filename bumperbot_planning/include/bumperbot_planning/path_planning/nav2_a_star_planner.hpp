@@ -16,7 +16,7 @@
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_msgs/action/smooth_path.hpp"
 
-namespace bumperbot_navigation
+namespace bumperbot_planning
 {
 struct GraphNode
 {
@@ -85,6 +85,6 @@ private:
   double manhattanDistance(const GraphNode &node, const GraphNode &goal_node);
 };
 
-}  // namespace bumperbot_navigation
+}  // namespace bumperbot_planning
 
 #endif  // A_STAR_PLANNER_HPP
