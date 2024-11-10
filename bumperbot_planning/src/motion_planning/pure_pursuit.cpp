@@ -5,10 +5,17 @@
 namespace bumperbot_planning
 {
 PurePursuit::PurePursuit() : Node("pure_pursuit_node"),
-    look_ahead_distance_(1.0), goal_tolerance_(0.1), max_linear_velocity_(0.5)
+    look_ahead_distance_(0.5), goal_tolerance_(0.1), max_linear_velocity_(0.3)
 {
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
+    declare_parameter<double>("look_ahead_distance", look_ahead_distance_);
+    declare_parameter<double>("goal_tolerance", goal_tolerance_);
+    declare_parameter<double>("max_linear_velocity", max_linear_velocity_);
+    look_ahead_distance_ = get_parameter("look_ahead_distance").as_double();
+    goal_tolerance_ = get_parameter("goal_tolerance").as_double();
+    max_linear_velocity_ = get_parameter("max_linear_velocity").as_double();
 
     path_sub_ = create_subscription<nav_msgs::msg::Path>(
         "/a_star/path", 10, std::bind(&PurePursuit::pathCallback, this, std::placeholders::_1));

@@ -32,6 +32,9 @@ ament_target_dependencies(a_star_planner_costmap rclcpp nav_msgs geometry_msgs t
 add_executable(pure_pursuit src/motion_planning/pure_pursuit.cpp)
 ament_target_dependencies(pure_pursuit rclcpp nav_msgs geometry_msgs tf2_ros tf2_geometry_msgs)
 
+add_executable(pd src/motion_planning/pd.cpp)
+ament_target_dependencies(pd rclcpp nav_msgs geometry_msgs tf2_ros tf2_geometry_msgs)
+
 add_library(dijkstra_planner_plugin SHARED src/path_planning/nav2_dijkstra_planner.cpp)
 ament_target_dependencies(dijkstra_planner_plugin
   rclcpp
@@ -77,6 +80,7 @@ install(TARGETS
   a_star_planner
   a_star_planner_costmap
   pure_pursuit
+  pd
   DESTINATION lib/${PROJECT_NAME}
 )
 
