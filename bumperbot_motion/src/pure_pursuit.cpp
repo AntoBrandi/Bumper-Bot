@@ -1,11 +1,11 @@
-#include "bumperbot_planning/motion_planning/pure_pursuit.hpp"
+#include "bumperbot_motion/pure_pursuit.hpp"
 
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-namespace bumperbot_planning
+namespace bumperbot_motion
 {
-PurePursuit::PurePursuit() : Node("pure_pursuit_node"),
-    look_ahead_distance_(0.5), goal_tolerance_(0.1), max_linear_velocity_(0.3)
+PurePursuit::PurePursuit() : Node("pure_pursuit_motion_planner_node"),
+    look_ahead_distance_(0.5), goal_tolerance_(0.1), max_linear_velocity_(0.3), max_angular_velocity_(1.0)
 {
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
@@ -13,9 +13,11 @@ PurePursuit::PurePursuit() : Node("pure_pursuit_node"),
     declare_parameter<double>("look_ahead_distance", look_ahead_distance_);
     declare_parameter<double>("goal_tolerance", goal_tolerance_);
     declare_parameter<double>("max_linear_velocity", max_linear_velocity_);
+    declare_parameter<double>("max_angular_velocity", max_angular_velocity_);
     look_ahead_distance_ = get_parameter("look_ahead_distance").as_double();
     goal_tolerance_ = get_parameter("goal_tolerance").as_double();
     max_linear_velocity_ = get_parameter("max_linear_velocity").as_double();
+    max_angular_velocity_ = get_parameter("max_angular_velocity").as_double();
 
     path_sub_ = create_subscription<nav_msgs::msg::Path>(
         "/a_star/path", 10, std::bind(&PurePursuit::pathCallback, this, std::placeholders::_1));
@@ -64,7 +66,7 @@ void PurePursuit::pathCallback(const nav_msgs::msg::Path::SharedPtr path_msg)
         // Create and publish the velocity command
         geometry_msgs::msg::Twist cmd_vel;
         cmd_vel.linear.x = max_linear_velocity_;
-        cmd_vel.angular.z = curvature * max_linear_velocity_;
+        cmd_vel.angular.z = curvature * max_angular_velocity_;
         cmd_pub_->publish(cmd_vel);
     }
 }
@@ -91,17 +93,17 @@ double PurePursuit::getCurvature(const geometry_msgs::msg::Pose & carrot_pose)
     
     // Find curvature of circle (k = 1 / R)
     if (carrot_dist2 > 0.001) {
-      return 2.0 * carrot_pose.position.y / carrot_dist2;
+        return 2.0 * carrot_pose.position.y / carrot_dist2;
     } else {
-      return 0.0;
+        return 0.0;
     }
 }
-}  // namespace bumperbot_planning
+}  // namespace bumperbot_motion
 
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<bumperbot_planning::PurePursuit>();
+    auto node = std::make_shared<bumperbot_motion::PurePursuit>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

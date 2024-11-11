@@ -5,13 +5,14 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/path.hpp"
+#include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
 
-namespace bumperbot_planning
+namespace bumperbot_motion
 {
 class PurePursuit : public rclcpp::Node
 {
@@ -30,6 +31,7 @@ private:
     double look_ahead_distance_;
     double goal_tolerance_;
     double max_linear_velocity_;
+    double max_angular_velocity_;
 
     void pathCallback(const nav_msgs::msg::Path::SharedPtr path_msg);
 
@@ -38,6 +40,6 @@ private:
 
     double getCurvature(const geometry_msgs::msg::Pose & carrot_pose);
 };
-}  // namespace bumperbot_planning
+}  // namespace bumperbot_motion
 
 #endif // PURE_PURSUIT_HPP

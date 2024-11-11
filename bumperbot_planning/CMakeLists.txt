@@ -14,52 +14,45 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(nav2_core REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(nav2_util REQUIRED)
+find_package(pluginlib REQUIRED)
 
 include_directories(include)
 
-add_executable(dijkstra_planner src/path_planning/dijkstra_planner.cpp)
-ament_target_dependencies(dijkstra_planner rclcpp nav_msgs geometry_msgs tf2_ros)
-
-add_executable(dijkstra_planner_costmap src/path_planning/dijkstra_planner_costmap.cpp)
-ament_target_dependencies(dijkstra_planner_costmap rclcpp nav_msgs geometry_msgs tf2_ros)
-
-add_executable(a_star_planner src/path_planning/a_star_planner.cpp)
-ament_target_dependencies(a_star_planner rclcpp nav_msgs geometry_msgs tf2_ros)
-
-add_executable(a_star_planner_costmap src/path_planning/a_star_planner_costmap.cpp)
-ament_target_dependencies(a_star_planner_costmap rclcpp nav_msgs geometry_msgs tf2_ros)
-
-add_executable(pure_pursuit src/motion_planning/pure_pursuit.cpp)
-ament_target_dependencies(pure_pursuit rclcpp nav_msgs geometry_msgs tf2_ros tf2_geometry_msgs)
-
-add_executable(pd src/motion_planning/pd.cpp)
-ament_target_dependencies(pd rclcpp nav_msgs geometry_msgs tf2_ros tf2_geometry_msgs)
-
-add_library(dijkstra_planner_plugin SHARED src/path_planning/nav2_dijkstra_planner.cpp)
-ament_target_dependencies(dijkstra_planner_plugin
+set(dependencies
   rclcpp
   nav_msgs
   geometry_msgs
   tf2_ros
+  tf2_geometry_msgs
   nav2_core
   nav2_costmap_2d
   nav2_util
+  pluginlib
 )
 
-add_library(a_star_planner_plugin SHARED src/path_planning/nav2_a_star_planner.cpp)
-ament_target_dependencies(a_star_planner_plugin
-  rclcpp
-  nav_msgs
-  geometry_msgs
-  tf2_ros
-  nav2_core
-  nav2_costmap_2d
-  nav2_util
-)
+add_executable(dijkstra_planner src/dijkstra_planner.cpp)
+ament_target_dependencies(dijkstra_planner ${dependencies})
 
-pluginlib_export_plugin_description_file(nav2_core global_planner_plugin.xml)
+add_executable(dijkstra_costmap_planner src/dijkstra_costmap_planner.cpp)
+ament_target_dependencies(dijkstra_costmap_planner ${dependencies})
 
-install(TARGETS dijkstra_planner_plugin a_star_planner_plugin
+add_executable(a_star_planner src/a_star_planner.cpp)
+ament_target_dependencies(a_star_planner ${dependencies})
+
+add_executable(a_star_costmap_planner src/a_star_costmap_planner.cpp)
+ament_target_dependencies(a_star_costmap_planner ${dependencies})
+
+add_library(dijkstra_planner_plugin SHARED src/nav2_dijkstra_planner.cpp)
+ament_target_dependencies(dijkstra_planner_plugin ${dependencies})
+
+add_library(a_star_planner_plugin SHARED src/nav2_a_star_planner.cpp)
+ament_target_dependencies(a_star_planner_plugin ${dependencies})
+
+pluginlib_export_plugin_description_file(nav2_core global_planner_plugins.xml)
+
+install(TARGETS
+  dijkstra_planner_plugin
+  a_star_planner_plugin
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
@@ -70,20 +63,22 @@ install(
   DESTINATION include
 )
 
-install(FILES global_planner_plugin.xml
+install(FILES global_planner_plugins.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
 install(TARGETS
   dijkstra_planner
-  dijkstra_planner_costmap
+  dijkstra_costmap_planner
   a_star_planner
-  a_star_planner_costmap
-  pure_pursuit
-  pd
+  a_star_costmap_planner
   DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_export_include_directories(include)
-ament_export_libraries(dijkstra_planner_plugin a_star_planner_plugin)
+ament_export_libraries(
+  dijkstra_planner_plugin
+  a_star_planner_plugin
+)
+ament_export_dependencies(${dependencies})
 ament_package()

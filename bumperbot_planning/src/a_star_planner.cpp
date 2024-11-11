@@ -1,7 +1,7 @@
 #include <queue>
 #include <vector>
 
-#include "bumperbot_planning/path_planning/a_star_planner.hpp"
+#include "bumperbot_planning/a_star_planner.hpp"
 #include "rmw/qos_profiles.h"
 
 
@@ -15,7 +15,7 @@ AStarPlanner::AStarPlanner() : Node("a_star_node")
     rclcpp::QoS map_qos(10);
     map_qos.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
     map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
-        "/global_costmap/costmap", map_qos, std::bind(&AStarPlanner::mapCallback, this, std::placeholders::_1));
+        "/map", map_qos, std::bind(&AStarPlanner::mapCallback, this, std::placeholders::_1));
 
     pose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
         "/goal_pose", 10, std::bind(&AStarPlanner::goalCallback, this, std::placeholders::_1));
@@ -100,10 +100,9 @@ nav_msgs::msg::Path AStarPlanner::plan(const geometry_msgs::msg::Pose & start, c
             GraphNode new_node = active_node + dir;
 
             if (std::find(visited_nodes.begin(), visited_nodes.end(), new_node) == visited_nodes.end() &&
-                poseOnMap(new_node) && map_->data.at(poseToCell(new_node)) < 99 &&
-                map_->data.at(poseToCell(new_node)) >= 0) {
+                poseOnMap(new_node) && map_->data.at(poseToCell(new_node)) == 0) {
                 
-                new_node.cost = active_node.cost + 1 + map_->data.at(poseToCell(new_node));
+                new_node.cost = active_node.cost + 1;
                 new_node.heuristic = manhattanDistance(new_node, goal_node);
                 new_node.prev = std::make_shared<GraphNode>(active_node);
                 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>bumperbot_planning</name>
+  <name>bumperbot_motion</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
   <maintainer email="antonio.brandi@outlook.it">alien</maintainer>
@@ -10,6 +10,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2_ros</depend>
@@ -19,18 +20,11 @@
   <depend>nav2_util</depend>
   <depend>pluginlib</depend>
 
-  <exec_depend>ros2launch</exec_depend>
-  <exec_depend>nav2_controller</exec_depend>
-  <exec_depend>nav2_planner</exec_depend>
-  <exec_depend>nav2_behaviors</exec_depend>
-  <exec_depend>nav2_bt_navigator</exec_depend>
-  <exec_depend>nav2_lifecycle_manager</exec_depend>
-
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
-    <nav2_core plugin="${prefix}/global_planner_plugins.xml" />
+    <nav2_core plugin="${prefix}/motion_planner_plugins.xml" />
   </export>
 </package>

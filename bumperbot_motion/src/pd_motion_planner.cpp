@@ -1,13 +1,13 @@
 #include <cmath>
 #include <algorithm>
 
-#include "bumperbot_planning/motion_planning/pd.hpp"
+#include "bumperbot_motion/pd_motion_planner.hpp"
 
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-namespace bumperbot_planning
+namespace bumperbot_motion
 {
-PD::PD() : Node("pd_node"),
+PDMotionPlanner::PDMotionPlanner() : Node("pd_motion_planner_node"),
     kp_(2.0), kd_(0.1), goal_tolerance_(0.1), max_linear_velocity_(0.3),
     max_angular_velocity_(1.0), prev_angular_error_(0.0), prev_linear_error_(0.0)
 {
@@ -26,14 +26,14 @@ PD::PD() : Node("pd_node"),
     max_angular_velocity_ = get_parameter("max_angular_velocity").as_double();
 
     path_sub_ = create_subscription<nav_msgs::msg::Path>(
-        "/a_star/path", 10, std::bind(&PD::pathCallback, this, std::placeholders::_1));
+        "/a_star/path", 10, std::bind(&PDMotionPlanner::pathCallback, this, std::placeholders::_1));
         
     cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
-    closest_pub_ = create_publisher<geometry_msgs::msg::PoseStamped>("/pd/pose", 10);
+    closest_pub_ = create_publisher<geometry_msgs::msg::PoseStamped>("/pd/next_pose", 10);
 }
 
-void PD::pathCallback(const nav_msgs::msg::Path::SharedPtr path_msg)
+void PDMotionPlanner::pathCallback(const nav_msgs::msg::Path::SharedPtr path_msg)
 {
     bool is_first_cycle = true;
     rclcpp::Time last_cycle_time;
@@ -48,8 +48,8 @@ void PD::pathCallback(const nav_msgs::msg::Path::SharedPtr path_msg)
             return;
         }
 
-        geometry_msgs::msg::PoseStamped closest_pose;
-        getNextPose(path_msg, closest_pose);
+        geometry_msgs::msg::PoseStamped next_pose;
+        getNextPose(path_msg, next_pose);
 
         double dx = path_msg->poses.front().pose.position.x - map_to_base_ts_.transform.translation.x;
         double dy = path_msg->poses.front().pose.position.y - map_to_base_ts_.transform.translation.y;
@@ -60,16 +60,16 @@ void PD::pathCallback(const nav_msgs::msg::Path::SharedPtr path_msg)
         }
 
         // Transform the closest point into the robot's frame
-        tf2::Transform map_to_base_tf, map_to_closest_pose_tf;
+        tf2::Transform map_to_base_tf, map_to_next_pose_tf;
         tf2::fromMsg(map_to_base_ts_.transform, map_to_base_tf);
-        tf2::fromMsg(closest_pose.pose, map_to_closest_pose_tf);
+        tf2::fromMsg(next_pose.pose, map_to_next_pose_tf);
 
-        geometry_msgs::msg::PoseStamped closest_pose_robot_frame;
-        closest_pose_robot_frame.header.frame_id = "base_footprint";
-        tf2::toMsg(map_to_base_tf.inverse() * map_to_closest_pose_tf, closest_pose_robot_frame.pose);
-        closest_pub_->publish(closest_pose_robot_frame);
+        geometry_msgs::msg::PoseStamped next_pose_robot_frame;
+        next_pose_robot_frame.header.frame_id = "base_footprint";
+        tf2::toMsg(map_to_base_tf.inverse() * map_to_next_pose_tf, next_pose_robot_frame.pose);
+        closest_pub_->publish(next_pose_robot_frame);
 
-        // Calculate the command
+        // Calculate the PDMotionPlanner command
         double dt;
         if (is_first_cycle) {
             dt = 0.0;
@@ -80,10 +80,10 @@ void PD::pathCallback(const nav_msgs::msg::Path::SharedPtr path_msg)
             dt = (get_clock()->now() - last_cycle_time).seconds();
         }
 
-        double angular_error = std::atan2(closest_pose_robot_frame.pose.position.y,
-            closest_pose_robot_frame.pose.position.x);
+        double angular_error = std::atan2(next_pose_robot_frame.pose.position.y,
+            next_pose_robot_frame.pose.position.x);
         double angular_error_derivative = (angular_error - prev_angular_error_) / dt;
-        double linear_error = closest_pose_robot_frame.pose.position.x;
+        double linear_error = next_pose_robot_frame.pose.position.x;
         double linear_error_derivative = (linear_error - prev_linear_error_) / dt;
 
         double command_angular = std::clamp(kp_ * angular_error + kd_ * angular_error_derivative,
@@ -103,7 +103,7 @@ void PD::pathCallback(const nav_msgs::msg::Path::SharedPtr path_msg)
     }
 }
 
-void PD::getNextPose(const nav_msgs::msg::Path::SharedPtr path, geometry_msgs::msg::PoseStamped & next_pose)
+void PDMotionPlanner::getNextPose(const nav_msgs::msg::Path::SharedPtr path, geometry_msgs::msg::PoseStamped & next_pose)
 {
     // Find the closest point to the robot on the path
     for(const auto & pose : path->poses){
@@ -116,12 +116,12 @@ void PD::getNextPose(const nav_msgs::msg::Path::SharedPtr path, geometry_msgs::m
         }
     }
 }
-}  // namespace bumperbot_planning
+}  // namespace bumperbot_motion
 
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<bumperbot_planning::PD>();
+    auto node = std::make_shared<bumperbot_motion::PDMotionPlanner>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

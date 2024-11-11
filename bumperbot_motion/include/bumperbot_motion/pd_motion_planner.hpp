@@ -1,5 +1,5 @@
-#ifndef PD_HPP
-#define PD_HPP
+#ifndef PD_MOTION_PLANNER_HPP
+#define PD_MOTION_PLANNER_HPP
 
 #include <memory>
 
@@ -11,12 +11,12 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
 
-namespace bumperbot_planning
+namespace bumperbot_motion
 {
-class PD : public rclcpp::Node
+class PDMotionPlanner : public rclcpp::Node
 {
 public:
-    PD();
+    PDMotionPlanner();
 
 private:
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_sub_;
@@ -41,6 +41,6 @@ private:
     void getNextPose(const nav_msgs::msg::Path::SharedPtr path,
         geometry_msgs::msg::PoseStamped & next_pose);
 };
-}  // namespace bumperbot_planning
+}  // namespace bumperbot_motion
 
-#endif // PD_HPP
+#endif // PD_MOTION_PLANNER_HPP
