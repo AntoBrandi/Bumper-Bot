@@ -8,9 +8,12 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 #include "tf2_ros/buffer.h"
+
+#include "nav_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
+
 #include "nav2_core/controller.hpp"
 #include "nav2_core/goal_checker.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
@@ -46,8 +49,7 @@ public:
 protected:
   geometry_msgs::msg::PoseStamped getNextPose(const geometry_msgs::msg::PoseStamped & robot_pose);
 
-  geometry_msgs::msg::PoseStamped transformPose(const geometry_msgs::msg::PoseStamped & pose,
-    const std::string & frame);
+  bool transformPlan(const std::string & frame);
 
   rclcpp_lifecycle::LifecycleNode::WeakPtr node_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::PoseStamped>> next_pose_pub_;
@@ -59,7 +61,7 @@ protected:
 
   double kp_;
   double kd_;
-  double goal_tolerance_;
+  double step_size_;
   double max_linear_velocity_;
   double max_angular_velocity_;
 

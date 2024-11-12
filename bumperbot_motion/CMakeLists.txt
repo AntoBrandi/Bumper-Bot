@@ -10,6 +10,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(nav2_core REQUIRED)
@@ -24,6 +25,7 @@ set(dependencies
   rclcpp_lifecycle
   nav_msgs
   geometry_msgs
+  tf2
   tf2_ros
   tf2_geometry_msgs
   nav2_core

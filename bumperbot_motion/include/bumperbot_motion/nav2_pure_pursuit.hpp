@@ -8,9 +8,12 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 #include "tf2_ros/buffer.h"
+
+#include "nav_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
+
 #include "nav2_core/controller.hpp"
 #include "nav2_core/goal_checker.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
@@ -46,6 +49,8 @@ public:
 protected:
   geometry_msgs::msg::PoseStamped getCarrotPose(const geometry_msgs::msg::PoseStamped & robot_pose);
 
+  bool transformPlan(const std::string & frame);
+
   double getCurvature(const geometry_msgs::msg::Pose & carrot_pose);
 
   rclcpp_lifecycle::LifecycleNode::WeakPtr node_;
@@ -57,7 +62,6 @@ protected:
   rclcpp::Clock::SharedPtr clock_;
 
   double look_ahead_distance_;
-  double goal_tolerance_;
   double max_linear_velocity_;
   double max_angular_velocity_;
 
