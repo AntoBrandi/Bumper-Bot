@@ -36,7 +36,7 @@ void PDMotionPlanner::configure(
     rclcpp::ParameterValue(1.0));
   nav2_util::declare_parameter_if_not_declared(
     node, plugin_name_ + ".step_size",
-    rclcpp::ParameterValue(0.1));
+    rclcpp::ParameterValue(0.2));
 
   node->get_parameter(plugin_name_ + ".kp", kp_);
   node->get_parameter(plugin_name_ + ".kd", kd_);
@@ -90,16 +90,16 @@ geometry_msgs::msg::TwistStamped PDMotionPlanner::computeVelocityCommands(
   next_pose_pub_->publish(next_pose);
         
   // Calculate the PDMotionPlanner command
-  tf2::Transform error_tf, robot_tf, next_pose_tf;
+  tf2::Transform next_pose_robot_tf, robot_tf, next_pose_tf;
   tf2::fromMsg(robot_pose.pose, robot_tf);
   tf2::fromMsg(next_pose.pose, next_pose_tf);
-  error_tf = robot_tf.inverse() * next_pose_tf;
+  next_pose_robot_tf = robot_tf.inverse() * next_pose_tf;
 
   double dt = (node->get_clock()->now() - last_cycle_time_).seconds();
 
-  double angular_error = tf2::getYaw(error_tf.getRotation());
+  double angular_error = next_pose_robot_tf.getOrigin().getY();
   double angular_error_derivative = (angular_error - prev_angular_error_) / dt;
-  double linear_error = error_tf.getOrigin().getX();
+  double linear_error = next_pose_robot_tf.getOrigin().getX();
   double linear_error_derivative = (linear_error - prev_linear_error_) / dt;
 
   cmd_vel.header.stamp = clock_->now();
@@ -124,13 +124,14 @@ void PDMotionPlanner::setSpeedLimit(const double &, const bool &){}
 
 geometry_msgs::msg::PoseStamped PDMotionPlanner::getNextPose(const geometry_msgs::msg::PoseStamped & robot_pose)
 {
-  geometry_msgs::msg::PoseStamped next_pose;
-  for(const auto & pose : global_plan_.poses){
-    double dx = pose.pose.position.x - robot_pose.pose.position.x;
-    double dy = pose.pose.position.y - robot_pose.pose.position.y;
+  geometry_msgs::msg::PoseStamped next_pose = global_plan_.poses.back();
+  for (auto pose_it = global_plan_.poses.rbegin(); pose_it != global_plan_.poses.rend(); ++pose_it) {
+    double dx = pose_it->pose.position.x - robot_pose.pose.position.x;
+    double dy = pose_it->pose.position.y - robot_pose.pose.position.y;
     double distance = std::sqrt(dx * dx + dy * dy);
     if(distance > step_size_){
-      next_pose = pose;
+      next_pose = *pose_it;
+    } else {
       break;
     }
   }

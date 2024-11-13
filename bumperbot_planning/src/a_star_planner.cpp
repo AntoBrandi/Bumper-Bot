@@ -126,6 +126,7 @@ nav_msgs::msg::Path AStarPlanner::plan(const geometry_msgs::msg::Pose & start, c
         path.poses.push_back(last_pose_stamped);
         active_node = *active_node.prev;
     }
+    std::reverse(path.poses.begin(), path.poses.end());
 
     return path;
 }

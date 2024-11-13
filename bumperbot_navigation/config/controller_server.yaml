@@ -24,7 +24,7 @@ controller_server:
       stateful: True
     # Pure Pursuit parameters
     FollowPath:
-      plugin: "bumperbot_motion::PurePursuit"
+      plugin: "bumperbot_motion::PDMotionPlanner"
       look_ahead_distance: 0.5
       max_linear_velocity: 0.3
       max_angular_velocity: 1.0
