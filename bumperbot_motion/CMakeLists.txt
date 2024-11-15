@@ -6,7 +6,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -17,6 +19,8 @@ find_package(nav2_core REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(pluginlib REQUIRED)
+
+ament_python_install_package(${PROJECT_NAME})
 
 include_directories(include)
 
@@ -68,6 +72,12 @@ install(FILES motion_planner_plugins.xml
 install(TARGETS
   pd_motion_planner
   pure_pursuit
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(PROGRAMS
+  ${PROJECT_NAME}/pd_motion_planner.py
+  ${PROJECT_NAME}/pure_pursuit.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

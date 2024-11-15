@@ -3,13 +3,15 @@
 <package format="3">
   <name>bumperbot_planning</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="antonio.brandi@outlook.it">alien</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Bumperbot Planning package</description>
+  <maintainer email="antonio.brandi@outlook.it">Antonio Brandi</maintainer>
+  <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>rclpy</depend>
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2_ros</depend>
