@@ -98,6 +98,6 @@ def generate_launch_description():
         safety_stop,
         localization,
         slam,
-        navigation,
+        # navigation,
         navigation_rviz
     ])

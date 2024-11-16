@@ -120,13 +120,13 @@ geometry_msgs::msg::PoseStamped PurePursuit::getCarrotPose(const geometry_msgs::
 
 double PurePursuit::getCurvature(const geometry_msgs::msg::Pose & carrot_pose)
 {
-  const double carrot_dist2 =
+  const double carrot_dist =
   (carrot_pose.position.x * carrot_pose.position.x) +
   (carrot_pose.position.y * carrot_pose.position.y);
     
   // Find curvature of circle (k = 1 / R)
-  if (carrot_dist2 > 0.001) {
-    return 2.0 * carrot_pose.position.y / carrot_dist2;
+  if (carrot_dist > 0.001) {
+    return 2.0 * carrot_pose.position.y / carrot_dist;
   } else {
     return 0.0;
   }
