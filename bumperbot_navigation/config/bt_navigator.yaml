@@ -9,11 +9,9 @@ bt_navigator:
     groot_zmq_server_port: 1667
     default_nav_to_pose_bt_xml: "/home/alien/bumperbot_ws/install/bumperbot_navigation/share/bumperbot_navigation/behavior_tree/simple_navigation.xml"
     default_nav_through_poses_bt_xml: "/home/alien/bumperbot_ws/install/bumperbot_navigation/share/bumperbot_navigation/behavior_tree/simple_navigation.xml"
-    navigators: ["navigate_to_pose", "navigate_through_poses"]
+    navigators: ["navigate_to_pose"]
     navigate_to_pose:
       plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
-    navigate_through_poses:
-      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
     # plugin_lib_names:
     # - nav2_compute_path_to_pose_action_bt_node
     # - nav2_follow_path_action_bt_node
