@@ -11,7 +11,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
 
     use_sim_time = LaunchConfiguration("use_sim_time")
-    lifecycle_nodes = ["controller_server", "planner_server", "behavior_server", "bt_navigator", "smoother_server"]
+    lifecycle_nodes = ["controller_server", "planner_server", "bt_navigator", "smoother_server"]
     bumperbot_navigation_pkg = get_package_share_directory("bumperbot_navigation")
 
     use_sim_time_arg = DeclareLaunchArgument(
@@ -104,7 +104,7 @@ def generate_launch_description():
         use_sim_time_arg,
         nav2_controller_server,
         nav2_planner_server,
-        nav2_behaviors,
+        # nav2_behaviors,
         nav2_bt_navigator,
         nav2_smoother_server,
         nav2_lifecycle_manager,
