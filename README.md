@@ -22,7 +22,10 @@ Bumperbot is an open-source 3D printed self-driving robot powered by ROS 2. Its 
 - :car: [`bumperbot_hardware`](./bumperbot_hardware): Contains the CAD model of the robot along with the STL files for 3D printing the robot.
 - :pushpin: [`bumperbot_localization`](./bumperbot_localization): Contains the Odometry calculation using the [robot_localization](https://docs.ros.org/en/melodic/api/robot_localization/html/index.html) package and the Global Localization configuration and launch files for [Nav2 AMCL](https://docs.nav2.org/configuration/packages/configuring-amcl.html).
 - :world_map: [`bumperbot_mapping`](./bumperbot_mapping): Contains an implementation of the Mapping with known poses algorithm and the [SLAM Toolbox](https://github.com/SteveMacenski/slam_toolbox) configuration and launch files
+- :vertical_traffic_light: [`bumperbot_motion`](./bumperbot_motion/): Contains the Motion Planners (AKA Controllers) for the [nav2_controller](https://docs.nav2.org/configuration/packages/configuring-controller-server.html).
 - :email: [`bumperbot_msgs`](./bumperbot_msgs/): Contains the definition of new ROS 2 message interfaces.
+- :compass: [`bumperbot_navigation`](./bumperbot_navigation/): Contains Nav2 configurations and launch files.
+- :triangular_ruler: [`bumperbot_planning`](./bumperbot_planning/): Contains the Path Planners for the [nav2_planner](https://docs.nav2.org/configuration/packages/configuring-planner-server.html).
 - :paperclip: [`bumperbot_py_examples`](./bumperbot_py_examples/): Contains ROS 2 templates for developing with Python.
 - :hammer_and_pick: [`bumperbot_utils`](./bumperbot_utils/): Contains some utilities and tools.
 
