@@ -10,3 +10,7 @@ twist_mux:
         topic   : key_vel
         timeout : 0.5
         priority: 90
+      navigation: 
+        topic   : cmd_vel
+        timeout : 0.5
+        priority: 80

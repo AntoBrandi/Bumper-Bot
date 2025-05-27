@@ -1,0 +1,12 @@
+<class_libraries>
+	<library path="pd_motion_planner">
+		<class type="bumperbot_motion::PDMotionPlanner" base_class_type="nav2_core::Controller">
+		  <description>PD Motion Planner.</description>
+		</class>
+	</library>
+	<library path="pure_pursuit">
+		<class type="bumperbot_motion::PurePursuit" base_class_type="nav2_core::Controller">
+		  <description>Pure Pursuit Motion Planner.</description>
+		</class>
+	</library>
+</class_libraries>

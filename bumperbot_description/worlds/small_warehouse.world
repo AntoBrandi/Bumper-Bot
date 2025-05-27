@@ -3,10 +3,8 @@
   <world name="default">
     
     <gravity>0 0 -9.8</gravity>
-    <physics default="0" name="default_physics" type="ode">
-      <max_step_size>0.001</max_step_size>
-      <real_time_factor>1</real_time_factor>
-      <real_time_update_rate>1000</real_time_update_rate>
+    <physics type="ode">
+        <max_step_size>0.01</max_step_size>
     </physics>
 
         <model name="aws_robomaker_warehouse_ShelfF_01_001">
