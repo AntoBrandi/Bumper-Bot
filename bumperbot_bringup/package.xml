@@ -16,6 +16,7 @@
   <exec_depend>bumperbot_description</exec_depend>
   <exec_depend>bumperbot_localization</exec_depend>
   <exec_depend>bumperbot_mapping</exec_depend>
+  <exec_depend>nav2_bringup</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
