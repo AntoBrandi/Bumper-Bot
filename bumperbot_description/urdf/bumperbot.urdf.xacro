@@ -226,6 +226,32 @@
     <axis xyz="0 0 0" />
   </joint>
 
+  <link name="rgb_camera">
+    <mass value="0.0001" />
+    <inertia ixx="0.001" ixy="0.001" ixz="0.001"
+             iyy="0.001" iyz="0.001"
+             izz="0.001" />
+    <visual>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://bumperbot_description/meshes/pi_camera.STL"/>
+      </geometry>
+      <material name="green"/>
+    </visual>
+    <collision>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://bumperbot_description/meshes/pi_camera.STL"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name ="rgb_camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link = "rgb_camera"/>
+    <origin xyz="0.078 0.0 0.07" rpy="0.0 -0.35 0.0"/>
+  </joint>
+
   <material name="blue">
     <color rgba="0 0 1 1"/>
   </material>
@@ -237,6 +263,9 @@
   </material>
   <material name="dark_grey">
     <color rgba="0.3 0.3 0.3 1"/>
+  </material>
+  <material name="green">
+    <color rgba="0 1 0 1"/>
   </material>
 
 </robot>
