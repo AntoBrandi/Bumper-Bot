@@ -153,30 +153,87 @@
   </gazebo>
 
   <!-- RGB Camera -->
-  <gazebo reference="rgb_camera">
-    <sensor name="camera" type="camera">
-      <always_on>true</always_on>
-      <update_rate>30.0</update_rate>
-      <visualize>true</visualize>
-      <topic>/image_raw</topic>
-      <gz_frame_id>/rgb_camera</gz_frame_id>
-      <camera name="camera">
-        <horizontal_fov>1.21126</horizontal_fov>
-        <image>
-          <width>2304</width>
-          <height>1296</height>
-          <format>R8G8B8</format>
-        </image>
-        <distortion>
-          <k1>0.0</k1>
-          <k2>0.0</k2>
-          <k3>0.0</k3>
-          <p1>0.0</p1>
-          <p2>0.0</p2>
-          <center>0.5 0.5</center>
-        </distortion>
-      </camera>
-    </sensor>   
-  </gazebo>
+  <xacro:if value="${camera_model == 'pi_camera'}">
+    <gazebo reference="rgb_camera">
+      <sensor name="camera" type="camera">
+        <always_on>true</always_on>
+        <update_rate>30.0</update_rate>
+        <visualize>true</visualize>
+        <topic>/image_raw</topic>
+        <gz_frame_id>/rgb_camera</gz_frame_id>
+        <camera name="camera">
+          <horizontal_fov>1.21126</horizontal_fov>
+          <image>
+            <width>2304</width>
+            <height>1296</height>
+            <format>R8G8B8</format>
+          </image>
+          <distortion>
+            <k1>0.0</k1>
+            <k2>0.0</k2>
+            <k3>0.0</k3>
+            <p1>0.0</p1>
+            <p2>0.0</p2>
+            <center>0.5 0.5</center>
+          </distortion>
+        </camera>
+      </sensor>   
+    </gazebo>
+  </xacro:if>
+
+  <!-- RGBD Camera -->
+  <xacro:if value="${camera_model == 'realsense_d435'}">
+    <gazebo reference="rgbd_camera_link">
+      <sensor name="d435_color" type="camera">
+				<always_on>1</always_on>
+				<update_rate>30</update_rate>
+				<visualize>1</visualize>
+				<pose>0 0.0175 0.5125 0 -0 0</pose>
+				<topic>/rgbd_camera/image_raw</topic>
+        <gz_frame_id>rgbd_camera_link</gz_frame_id>
+				<camera name="d435">
+					<horizontal_fov>1.21126</horizontal_fov>
+					<image>
+						<width>640</width>
+						<height>480</height>
+						<format>RGB_INT8</format>
+					</image>
+					<clip>
+						<near>0.1</near>
+						<far>100</far>
+					</clip>
+					<noise>
+						<type>gaussian</type>
+						<mean>0</mean>
+						<stddev>0.007</stddev>
+					</noise>
+				</camera>
+			</sensor>
+      <sensor name="d435_depth" type="depth_camera">
+				<always_on>1</always_on>
+				<update_rate>90</update_rate>
+				<visualize>0</visualize>
+				<topic>/rgbd_camera/depth</topic>
+        <gz_frame_id>rgbd_camera_link</gz_frame_id>
+				<pose>0 0.0175 0.5125 0 -0 0</pose>
+				<camera name="d435">
+					<horizontal_fov>1.48702</horizontal_fov>
+					<image>
+						<width>1280</width>
+						<height>720</height>
+					</image>
+					<clip>
+						<near>0.1</near>
+						<far>100</far>
+					</clip>
+					<noise>
+						<type>gaussian</type>
+						<mean>0</mean>
+						<stddev>0.1</stddev>
+					</noise>
+				</camera>
+			</sensor>
+    </gazebo>
+  </xacro:if>
 
 </robot>

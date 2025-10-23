@@ -8,11 +8,17 @@
   <!-- Load Simulated or Real Hardware Interfaces -->
   <xacro:arg name="is_sim" default="true"/>
 
+  <xacro:arg name="camera_model" default="realsense_d435"/>
+  <xacro:property name="camera_model" value="$(arg camera_model)" />
+
   <!-- Include Gazebo Parameters -->
   <xacro:include filename="$(find bumperbot_description)/urdf/bumperbot_gazebo.xacro" />
 
   <!-- Include ros2_control Plugins -->
   <xacro:include filename="$(find bumperbot_description)/urdf/bumperbot_ros2_control.xacro" />
+
+  <!-- Include Realsense Description -->
+  <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro"/>
 
   <link name="base_footprint"/>
   
@@ -226,31 +232,39 @@
     <axis xyz="0 0 0" />
   </joint>
 
-  <link name="rgb_camera">
-    <mass value="0.0001" />
-    <inertia ixx="0.001" ixy="0.001" ixz="0.001"
-             iyy="0.001" iyz="0.001"
-             izz="0.001" />
-    <visual>
-      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-      <geometry>
-        <mesh filename="package://bumperbot_description/meshes/pi_camera.STL"/>
-      </geometry>
-      <material name="green"/>
-    </visual>
-    <collision>
-      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-      <geometry>
-        <mesh filename="package://bumperbot_description/meshes/pi_camera.STL"/>
-      </geometry>
-    </collision>
-  </link>
+  <xacro:if value="${camera_model == 'pi_camera'}">
+    <link name="rgb_camera">
+      <mass value="0.0001" />
+      <inertia ixx="0.001" ixy="0.001" ixz="0.001"
+              iyy="0.001" iyz="0.001"
+              izz="0.001" />
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bumperbot_description/meshes/pi_camera.STL"/>
+        </geometry>
+        <material name="green"/>
+      </visual>
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bumperbot_description/meshes/pi_camera.STL"/>
+        </geometry>
+      </collision>
+    </link>
 
-  <joint name ="rgb_camera_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link = "rgb_camera"/>
-    <origin xyz="0.078 0.0 0.07" rpy="0.0 -0.35 0.0"/>
-  </joint>
+    <joint name ="camera_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link = "rgb_camera"/>
+      <origin xyz="0.078 0.0 0.07" rpy="0.0 -0.35 0.0"/>
+    </joint>
+  </xacro:if>
+
+  <xacro:if value="${camera_model == 'realsense_d435'}">
+    <xacro:sensor_d435 name="rgbd_camera" parent="base_link" use_nominal_extrinsics="$(arg is_sim)">
+      <origin xyz="0.07 0.0 0.08" rpy="0.0 0.0 0.0"/>
+    </xacro:sensor_d435>
+  </xacro:if>
 
   <material name="blue">
     <color rgba="0 0 1 1"/>
