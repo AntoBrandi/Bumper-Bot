@@ -186,13 +186,13 @@
     <gazebo reference="rgbd_camera_link">
       <sensor name="d435_color" type="camera">
 				<always_on>1</always_on>
-				<update_rate>30</update_rate>
+				<update_rate>10</update_rate>
 				<visualize>1</visualize>
-				<pose>0 0.0175 0.5125 0 -0 0</pose>
 				<topic>/rgbd_camera/image_raw</topic>
-        <gz_frame_id>rgbd_camera_link</gz_frame_id>
+        <gz_frame_id>rgbd_camera_color_optical_frame</gz_frame_id>
 				<camera name="d435">
-					<horizontal_fov>1.21126</horizontal_fov>
+					<vertical_fov>1.518</vertical_fov>
+          <horizontal_fov>1.012</horizontal_fov>
 					<image>
 						<width>640</width>
 						<height>480</height>
@@ -211,16 +211,16 @@
 			</sensor>
       <sensor name="d435_depth" type="depth_camera">
 				<always_on>1</always_on>
-				<update_rate>90</update_rate>
+				<update_rate>10</update_rate>
 				<visualize>0</visualize>
 				<topic>/rgbd_camera/depth</topic>
-        <gz_frame_id>rgbd_camera_link</gz_frame_id>
-				<pose>0 0.0175 0.5125 0 -0 0</pose>
+        <gz_frame_id>rgbd_camera_depth_optical_frame</gz_frame_id>
 				<camera name="d435">
-					<horizontal_fov>1.48702</horizontal_fov>
+					<vertical_fov>1.518</vertical_fov>
+          <horizontal_fov>1.012</horizontal_fov>
 					<image>
-						<width>1280</width>
-						<height>720</height>
+						<width>640</width>
+						<height>480</height>
 					</image>
 					<clip>
 						<near>0.1</near>
@@ -229,7 +229,7 @@
 					<noise>
 						<type>gaussian</type>
 						<mean>0</mean>
-						<stddev>0.1</stddev>
+						<stddev>0.001</stddev>
 					</noise>
 				</camera>
 			</sensor>

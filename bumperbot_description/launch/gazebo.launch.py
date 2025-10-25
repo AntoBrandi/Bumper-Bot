@@ -88,7 +88,8 @@ def generate_launch_description():
         ],
         remappings=[
             ('/imu', '/imu/out'),
-        ]
+            ('/rgbd_camera/depth', '/rgbd_camera/depth/image_raw'),
+        ],
     )
 
     return LaunchDescription([

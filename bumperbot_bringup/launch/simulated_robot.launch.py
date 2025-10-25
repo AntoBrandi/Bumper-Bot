@@ -46,41 +46,41 @@ def generate_launch_description():
         }.items()
     )
 
-    localization = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("bumperbot_localization"),
-            "launch",
-            "global_localization.launch.py"
-        ),
-        condition=UnlessCondition(use_slam)
-    )
+    # localization = IncludeLaunchDescription(
+    #     os.path.join(
+    #         get_package_share_directory("bumperbot_localization"),
+    #         "launch",
+    #         "global_localization.launch.py"
+    #     ),
+    #     condition=UnlessCondition(use_slam)
+    # )
 
-    slam = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("bumperbot_mapping"),
-            "launch",
-            "slam.launch.py"
-        ),
-        condition=IfCondition(use_slam)
-    )
+    # slam = IncludeLaunchDescription(
+    #     os.path.join(
+    #         get_package_share_directory("bumperbot_mapping"),
+    #         "launch",
+    #         "slam.launch.py"
+    #     ),
+    #     condition=IfCondition(use_slam)
+    # )
 
-    navigation = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("bumperbot_navigation"),
-            "launch",
-            "navigation.launch.py"
-        ),
-    )
+    # navigation = IncludeLaunchDescription(
+    #     os.path.join(
+    #         get_package_share_directory("bumperbot_navigation"),
+    #         "launch",
+    #         "navigation.launch.py"
+    #     ),
+    # )
 
     rviz = Node(
         package="rviz2",
         executable="rviz2",
-        arguments=["-d", os.path.join(
-                get_package_share_directory("nav2_bringup"),
-                "rviz",
-                "nav2_default_view.rviz"
-            )
-        ],
+        # arguments=["-d", os.path.join(
+        #         get_package_share_directory("nav2_bringup"),
+        #         "rviz",
+        #         "nav2_default_view.rviz"
+        #     )
+        # ],
         output="screen",
         parameters=[{"use_sim_time": True}]
     )
@@ -90,8 +90,8 @@ def generate_launch_description():
         gazebo,
         controller,
         joystick,
-        localization,
-        slam,
-        navigation,
+        # localization,
+        # slam,
+        # navigation,
         rviz,
     ])

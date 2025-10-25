@@ -1,0 +1,9 @@
+rgbd_odometry:
+  ros__parameters:
+    frame_id: base_footprint
+    odom_frame_id: odom
+    publish_tf: true
+    wait_for_transform: 0.3
+    wait_imu_to_init: true
+    always_check_imu_tf: true
+    keep_color: true

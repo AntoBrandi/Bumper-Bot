@@ -43,7 +43,7 @@ bumperbot_controller:
     publish_wheel_data: true
 
     # Publish to TF directly or not
-    enable_odom_tf: true
+    enable_odom_tf: false
 
     # Velocity and acceleration limits
     # Whenever a min_* is unspecified, default to -max_*
