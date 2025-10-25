@@ -37,19 +37,24 @@ def generate_launch_description():
         ],
     )
 
-    # rtabmap_slam = Node(
-    #     package="rtabmap_slam",
-    #     executable="rtabmap",
-    #     output="screen",
-    #     parameters=[
-    #         {"subscribe_depth": True,
-    #          "subscribe_odom_info": True,
-    #          "approx_sync": False,
-    #          "wait_imu_to_init": True,
-    #          "use_sim_time": use_sim_time}
-    #     ],
-    #     remappings=remappings,
-    # )
+    rtabmap_slam = Node(
+        package="rtabmap_slam",
+        executable="rtabmap",
+        output="screen",
+        parameters=[
+            os.path.join(
+                bumperbot_vision_pkg,
+                "config",
+                "rtabmap.yaml"),
+            {"use_sim_time": use_sim_time}
+        ],
+        remappings=[
+            ("imu", "/imu/out"),
+            ("depth/image", "/rgbd_camera/depth/image_raw"),
+            ("rgb/image", "/rgbd_camera/image_raw"),
+            ("rgb/camera_info", "/rgbd_camera/camera_info"),
+        ],
+    )
 
     rtabmap_viz = Node(
         package="rtabmap_viz",
@@ -84,7 +89,7 @@ def generate_launch_description():
     return LaunchDescription([
         use_sim_time_arg,
         rtabmap_odom,
-        # rtabmap_slam,
-        rtabmap_viz,
+        rtabmap_slam,
+        # rtabmap_viz,
         imu_filter,
     ])

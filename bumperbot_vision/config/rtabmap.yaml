@@ -7,3 +7,14 @@ rgbd_odometry:
     wait_imu_to_init: true
     always_check_imu_tf: true
     keep_color: true
+
+rtabmap:
+  ros__parameters:
+    frame_id: base_footprint
+    odom_frame_id: odom
+    map_frame_id: map
+    publish_tf: true
+    tf_tolerance: 0.3
+    wait_for_transform: 0.3
+    database_path: /home/alien/.ros/small_office_rtabmap.db
+    delete_db_on_start: false
