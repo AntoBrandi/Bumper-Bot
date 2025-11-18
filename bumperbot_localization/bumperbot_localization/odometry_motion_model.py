@@ -55,7 +55,7 @@ class OdometryMotionModel(Node):
             return
 
         self.odom_sub = self.create_subscription(
-            Odometry, 'bumperbot_controller/odom', self.odom_callback, 10
+            Odometry, 'odom', self.odom_callback, 10
         )
         self.pose_array_pub = self.create_publisher(
             PoseArray, 'odometry_motion_model/samples', 10

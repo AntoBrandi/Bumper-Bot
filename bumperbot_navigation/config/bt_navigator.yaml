@@ -3,7 +3,7 @@ bt_navigator:
     use_sim_time: true
     global_frame: map
     robot_base_frame: base_link
-    odom_topic: /bumperbot_controller/odom
+    odom_topic: /odom
     transform_tolerance: 0.3
     default_server_timeout: 1000
     bt_loop_duration: 10

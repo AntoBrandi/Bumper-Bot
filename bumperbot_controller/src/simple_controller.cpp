@@ -23,7 +23,7 @@ SimpleController::SimpleController(const std::string& name)
     wheel_cmd_pub_ = create_publisher<std_msgs::msg::Float64MultiArray>("/simple_velocity_controller/commands", 10);
     vel_sub_ = create_subscription<geometry_msgs::msg::TwistStamped>("/bumperbot_controller/cmd_vel", 10, std::bind(&SimpleController::velCallback, this, _1));
     joint_sub_ = create_subscription<sensor_msgs::msg::JointState>("/joint_states", 10, std::bind(&SimpleController::jointCallback, this, _1));
-    odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("/bumperbot_controller/odom", 10);
+    odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
     speed_conversion_ << wheel_radius_/2, wheel_radius_/2, wheel_radius_/wheel_separation_, -wheel_radius_/wheel_separation_;
     RCLCPP_INFO_STREAM(get_logger(), "The conversion matrix is \n" << speed_conversion_);

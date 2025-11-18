@@ -60,7 +60,7 @@ OdometryMotionModel::OdometryMotionModel(const std::string &name)
         return;
     }
 
-    odom_sub_ = create_subscription<nav_msgs::msg::Odometry>("bumperbot_controller/odom", 10,
+    odom_sub_ = create_subscription<nav_msgs::msg::Odometry>("odom", 10,
         std::bind(&OdometryMotionModel::odomCallback, this, _1));
     pose_array_pub_ = create_publisher<geometry_msgs::msg::PoseArray>("odometry_motion_model/samples", 10);
 }
