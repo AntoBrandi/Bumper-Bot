@@ -47,6 +47,26 @@ private:
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & l_info_msg,
     const sensor_msgs::msg::Image::ConstSharedPtr & r_image_msg,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & r_info_msg);
+
+  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> & parameters);
+  OnSetParametersCallbackHandle::SharedPtr on_set_parameters_callback_handle_;
+
+  // Stereo Matcher Parameters
+  struct SGBMParams {
+    int min_disparity;
+    int num_disparities;
+    int block_size;
+    int p1;
+    int p2;
+    int disp12_max_diff;
+    int pre_filter_cap;
+    int uniqueness_ratio;
+    int speckle_window_size;
+    int speckle_range;
+    int mode;
+  } sgbm_params_;
+
+  double baseline_;
 };
 }  // namespace bumperbot_vision
 

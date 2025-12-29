@@ -18,32 +18,85 @@ StereoVision::StereoVision(const std::string & name) : Node(name)
   const auto sensor_data_qos = rclcpp::SensorDataQoS().get_rmw_qos_profile();
 
   left_image_sub_.subscribe(
-    this, "left_camera/image_raw", hints.getTransport(), sensor_data_qos);
+    this, "left_camera/image_rect", hints.getTransport(), sensor_data_qos);
   left_info_sub_.subscribe(this, "left_camera/camera_info", sensor_data_qos);
   right_image_sub_.subscribe(
-    this, "right_camera/image_raw", hints.getTransport(), sensor_data_qos);
+    this, "right_camera/image_rect", hints.getTransport(), sensor_data_qos);
   right_info_sub_.subscribe(this, "right_camera/camera_info", sensor_data_qos);
 
   disparity_image_pub_ =
     image_transport::create_publisher(this, "disparity", rmw_qos_profile_sensor_data);
+
+  // Declare parameters
+  sgbm_params_.min_disparity = declare_parameter("min_disparity", 0);
+  sgbm_params_.num_disparities = declare_parameter("num_disparities", 96);
+  sgbm_params_.block_size = declare_parameter("block_size", 9);
+  sgbm_params_.p1 = declare_parameter("p1", 8 * 9 * 9);
+  sgbm_params_.p2 = declare_parameter("p2", 32 * 9 * 9);
+  sgbm_params_.disp12_max_diff = declare_parameter("disp12_max_diff", 1);
+  sgbm_params_.pre_filter_cap = declare_parameter("pre_filter_cap", 63);
+  sgbm_params_.uniqueness_ratio = declare_parameter("uniqueness_ratio", 10);
+  sgbm_params_.speckle_window_size = declare_parameter("speckle_window_size", 100);
+  sgbm_params_.speckle_range = declare_parameter("speckle_range", 32);
+  sgbm_params_.mode = declare_parameter("mode", static_cast<int>(cv::StereoSGBM::MODE_SGBM));
+  baseline_ = declare_parameter("baseline", 0.06);
+
+  on_set_parameters_callback_handle_ = this->add_on_set_parameters_callback(
+    std::bind(&StereoVision::onSetParameters, this, _1));
+}
+
+rcl_interfaces::msg::SetParametersResult StereoVision::onSetParameters(
+  const std::vector<rclcpp::Parameter> & parameters)
+{
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  for (const auto & param : parameters) {
+    if (param.get_name() == "min_disparity") {
+      sgbm_params_.min_disparity = param.as_int();
+    } else if (param.get_name() == "num_disparities") {
+      sgbm_params_.num_disparities = param.as_int();
+    } else if (param.get_name() == "block_size") {
+      sgbm_params_.block_size = param.as_int();
+    } else if (param.get_name() == "p1") {
+      sgbm_params_.p1 = param.as_int();
+    } else if (param.get_name() == "p2") {
+      sgbm_params_.p2 = param.as_int();
+    } else if (param.get_name() == "disp12_max_diff") {
+      sgbm_params_.disp12_max_diff = param.as_int();
+    } else if (param.get_name() == "pre_filter_cap") {
+      sgbm_params_.pre_filter_cap = param.as_int();
+    } else if (param.get_name() == "uniqueness_ratio") {
+      sgbm_params_.uniqueness_ratio = param.as_int();
+    } else if (param.get_name() == "speckle_window_size") {
+      sgbm_params_.speckle_window_size = param.as_int();
+    } else if (param.get_name() == "speckle_range") {
+      sgbm_params_.speckle_range = param.as_int();
+    } else if (param.get_name() == "mode") {
+      sgbm_params_.mode = param.as_int();
+    } else if (param.get_name() == "baseline") {
+      baseline_ = param.as_double();
+    }
+  }
+  return result;
 }
 
 void StereoVision::imageCallback(
   const sensor_msgs::msg::Image::ConstSharedPtr & left_image_msg,
   const sensor_msgs::msg::CameraInfo::ConstSharedPtr & left_info_msg,
   const sensor_msgs::msg::Image::ConstSharedPtr & right_image_msg,
-  const sensor_msgs::msg::CameraInfo::ConstSharedPtr & right_info_msg)
+  const sensor_msgs::msg::CameraInfo::ConstSharedPtr & /*right_info_msg*/)
 {
   cv::Mat left = cv_bridge::toCvCopy(left_image_msg, left_image_msg->encoding)->image;
   cv::Mat right = cv_bridge::toCvCopy(right_image_msg, right_image_msg->encoding)->image;
-  cv::Ptr<cv::StereoSGBM> sgbm =
-    cv::StereoSGBM::create(0, 96, 9, 8 * 9 * 9, 32 * 9 * 9, 1, 63, 10, 100, 32);
+  cv::Ptr<cv::StereoSGBM> sgbm = cv::StereoSGBM::create(
+    sgbm_params_.min_disparity, sgbm_params_.num_disparities, sgbm_params_.block_size,
+    sgbm_params_.p1, sgbm_params_.p2, sgbm_params_.disp12_max_diff, sgbm_params_.pre_filter_cap,
+    sgbm_params_.uniqueness_ratio, sgbm_params_.speckle_window_size, sgbm_params_.speckle_range,
+    sgbm_params_.mode);
   cv::Mat disparity_sgbm, disparity;
   sgbm->compute(left, right, disparity_sgbm);
   disparity_sgbm.convertTo(disparity, CV_32F, 1.0 / 16.0);
   cv::Mat normalized_disparity;
-  double min_disp = 0.0;
-  double max_disp = 96.0 * 16.0;
   cv::normalize(disparity_sgbm, normalized_disparity, 0, 255, cv::NORM_MINMAX, CV_8U);
 
   auto disparity_msg =
@@ -70,12 +123,13 @@ void StereoVision::imageCallback(
 
   for (int v = 0; v < left.rows; v++) {
     for (int u = 0; u < left.cols; u++) {
-      if (disparity.at<float>(v, u) <= 10.0 || disparity.at<float>(v, u) >= 96.0) {
+      if (disparity.at<float>(v, u) <= sgbm_params_.min_disparity ||
+          disparity.at<float>(v, u) >= sgbm_params_.min_disparity + sgbm_params_.num_disparities) {
         continue;
       }
       double x = (u - left_info_msg->k[2]) / left_info_msg->k[0];
       double y = (v - left_info_msg->k[5]) / left_info_msg->k[4];
-      double depth = left_info_msg->k[0] * 0.06 / (disparity.at<float>(v, u));
+      double depth = left_info_msg->k[0] * baseline_ / (disparity.at<float>(v, u));
       *iter_x = x * depth;
       *iter_y = y * depth;
       *iter_z = depth;
