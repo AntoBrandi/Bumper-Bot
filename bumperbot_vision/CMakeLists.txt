@@ -37,6 +37,11 @@ add_executable(stereo_vision
 )
 ament_target_dependencies(stereo_vision ${dependencies})
 
+add_executable(visual_odometry
+  src/visual_odometry.cpp
+)
+ament_target_dependencies(visual_odometry ${dependencies})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
@@ -46,6 +51,7 @@ endif()
 
 install(TARGETS
   stereo_vision
+  visual_odometry
   DESTINATION lib/${PROJECT_NAME}
 )
 
