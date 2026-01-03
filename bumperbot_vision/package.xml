@@ -16,8 +16,11 @@
   <depend>point_cloud_transport</depend>
   <depend>message_filters</depend>
   <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>libopencv-dev</depend>
+  <exec_depend>python3-opencv</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

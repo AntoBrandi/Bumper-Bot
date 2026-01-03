@@ -12,6 +12,7 @@ find_package(image_transport REQUIRED)
 find_package(point_cloud_transport REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 
@@ -21,6 +22,7 @@ set(dependencies
   point_cloud_transport
   message_filters
   sensor_msgs
+  nav_msgs
   cv_bridge
   OpenCV
 )
@@ -57,6 +59,7 @@ install(TARGETS
 
 install(PROGRAMS
   ${PROJECT_NAME}/stereo_vision.py
+  ${PROJECT_NAME}/visual_odometry.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
