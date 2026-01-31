@@ -23,6 +23,36 @@ using namespace std::placeholders;
 
 namespace bumperbot_vision
 {
+class FeatureMethod
+{
+public:
+  FeatureMethod();
+
+  void compute(const cv::Mat & img, cv::Mat & img_match);
+
+private:
+  cv::Mat prev_image_;
+  std::vector<cv::KeyPoint> prev_keypoints_;
+  cv::Mat prev_descriptor_;
+  cv::Ptr<cv::FeatureDetector> detector_;
+  cv::Ptr<cv::DescriptorExtractor> descriptor_;
+  cv::Ptr<cv::DescriptorMatcher> matcher_;
+};
+
+
+class DirectMethod
+{
+public:
+  DirectMethod();
+
+  void compute(const cv::Mat & img, cv::Mat & img_match);
+
+private:
+  cv::Mat prev_image_;
+  cv::Ptr<cv::GFTTDetector> detector_;
+  std::vector<cv::KeyPoint> prev_keypoints_;
+};
+
 class VisualOdometry : public rclcpp::Node
 {
 public:
@@ -39,12 +69,9 @@ private:
 
   image_transport::Publisher matches_pub_;
 
-  cv::Mat prev_image_;
-  std::vector<cv::KeyPoint> prev_keypoints_;
-  cv::Mat prev_descriptor_;
-  cv::Ptr<cv::FeatureDetector> detector_;
-  cv::Ptr<cv::DescriptorExtractor> descriptor_;
-  cv::Ptr<cv::DescriptorMatcher> matcher_;
+  bool use_direct_method_;
+  std::unique_ptr<FeatureMethod> feature_method_;
+  std::unique_ptr<DirectMethod> direct_method_;
 
   void imageCallback(
     const sensor_msgs::msg::Image::ConstSharedPtr & image_msg,
