@@ -19,6 +19,7 @@
   <depend>nav_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>libopencv-dev</depend>
+  <depend>image_geometry</depend>
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 

@@ -8,17 +8,11 @@
   <!-- Load Simulated or Real Hardware Interfaces -->
   <xacro:arg name="is_sim" default="true"/>
 
-  <xacro:arg name="camera_model" default="realsense_d435"/>
-  <xacro:property name="camera_model" value="$(arg camera_model)" />
-
   <!-- Include Gazebo Parameters -->
   <xacro:include filename="$(find bumperbot_description)/urdf/bumperbot_gazebo.xacro" />
 
   <!-- Include ros2_control Plugins -->
   <xacro:include filename="$(find bumperbot_description)/urdf/bumperbot_ros2_control.xacro" />
-
-  <!-- Include Realsense Description -->
-  <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro"/>
 
   <link name="base_footprint"/>
   

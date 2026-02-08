@@ -14,6 +14,7 @@ find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(image_geometry REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(dependencies
@@ -24,6 +25,7 @@ set(dependencies
   sensor_msgs
   nav_msgs
   cv_bridge
+  image_geometry
   OpenCV
 )
 
@@ -33,6 +35,11 @@ include_directories(
   include
   ${OpenCV_INCLUDE_DIRS}
 )
+
+add_executable(undistort_image
+  src/undistort_image.cpp
+)
+ament_target_dependencies(undistort_image ${dependencies})
 
 add_executable(stereo_vision
   src/stereo_vision.cpp
@@ -52,12 +59,14 @@ if(BUILD_TESTING)
 endif()
 
 install(TARGETS
+  undistort_image
   stereo_vision
   visual_odometry
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(PROGRAMS
+  ${PROJECT_NAME}/undistort_image.py
   ${PROJECT_NAME}/stereo_vision.py
   ${PROJECT_NAME}/visual_odometry.py
   DESTINATION lib/${PROJECT_NAME}
