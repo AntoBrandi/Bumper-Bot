@@ -170,7 +170,7 @@
         </image>
         <!-- Simulate Barrel distorsion -->
         <distortion>
-          <k1>-0.01</k1>
+          <k1>-0.05</k1>
           <k2>0.005</k2>
           <k3>0.0</k3>
           <p1>0.0</p1>
@@ -198,7 +198,7 @@
         </image>
         <!-- Simulate Pincushion distorsion -->
         <distortion>
-          <k1>0.01</k1>
+          <k1>0.05</k1>
           <k2>0.005</k2>
           <k3>0.0</k3>
           <p1>0.0</p1>
