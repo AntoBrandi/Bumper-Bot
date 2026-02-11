@@ -34,10 +34,12 @@ public:
 
   cv::Mat getTransform(const cv::Mat & K);
 
+  void update();
+
 private:
-  cv::Mat prev_image_;
+  cv::Mat prev_image_, curr_image_;
   std::vector<cv::KeyPoint> prev_keypoints_, curr_keypoints_;
-  cv::Mat prev_descriptor_;
+  cv::Mat prev_descriptor_, curr_descriptor_;
   cv::Ptr<cv::FeatureDetector> detector_;
   cv::Ptr<cv::DescriptorExtractor> descriptor_;
   cv::Ptr<cv::DescriptorMatcher> matcher_;
@@ -54,8 +56,10 @@ public:
 
   cv::Mat getTransform(const cv::Mat & K);
 
+  void update();
+
 private:
-  cv::Mat prev_image_;
+  cv::Mat prev_image_, curr_image_;
   std::vector<cv::KeyPoint> prev_keypoints_;
   cv::Ptr<cv::GFTTDetector> detector_;
   std::vector<cv::Point2f> pts_prev_, pts_curr_;

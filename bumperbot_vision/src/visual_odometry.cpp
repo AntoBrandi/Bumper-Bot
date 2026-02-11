@@ -45,15 +45,15 @@ void VisualOdometry::imageCallback(
         info_msg->k[3], info_msg->k[4], info_msg->k[5],
         info_msg->k[6], info_msg->k[7], info_msg->k[8]);
 
-  cv::Mat T_rel = cv::Mat::eye(4, 4, CV_64F);
+  cv::Mat T_rel_opencv = cv::Mat::eye(4, 4, CV_64F);
   cv::Mat img_match;
 
   if(use_direct_method_) {
     direct_method_->compute(img, img_match);
-    T_rel = direct_method_->getTransform(K);
+    T_rel_opencv = direct_method_->getTransform(K);
   } else {
     feature_method_->compute(img, img_match);
-    T_rel = feature_method_->getTransform(K);
+    T_rel_opencv = feature_method_->getTransform(K);
   }
 
   // Publish the matches image
@@ -67,9 +67,20 @@ void VisualOdometry::imageCallback(
     return; 
   }
 
+  cv::Mat t_cv = T_rel_opencv(cv::Rect(3, 0, 1, 3));
+  cv::Mat T_rel_ros = cv::Mat::eye(4, 4, CV_64F);
+  T_rel_ros.at<double>(0, 3) = t_cv.at<double>(2);
+  T_rel_ros.at<double>(1, 3) = -t_cv.at<double>(0);
+  T_rel_ros.at<double>(2, 3) = -t_cv.at<double>(1);
+
   double dt = (current_frame_time - last_frame_time_).seconds();
-  calculateOdometry(T_rel, dt);
+  calculateOdometry(T_rel_ros, dt);
   last_frame_time_ = current_frame_time;
+  if(use_direct_method_) {
+    direct_method_->update();
+  } else {
+    feature_method_->update();
+  }
 }
 
 void VisualOdometry::calculateOdometry(const cv::Mat & T_rel, const double dt)
@@ -78,50 +89,48 @@ void VisualOdometry::calculateOdometry(const cv::Mat & T_rel, const double dt)
     return;
   }
 
-  world_pose_ = world_pose_ * T_rel;
+  cv::Mat T_move = T_rel.inv();
+  cv::Mat R_move = T_move(cv::Rect(0, 0, 3, 3));
+  double delta_yaw = atan2(R_move.at<double>(1, 0), R_move.at<double>(0, 0));
+  
+  cv::Mat T_rel_clean = cv::Mat::eye(4, 4, CV_64F);
+  T_rel_clean.at<double>(0, 0) = cos(delta_yaw);
+  T_rel_clean.at<double>(0, 1) = -sin(delta_yaw);
+  T_rel_clean.at<double>(1, 0) = sin(delta_yaw);
+  T_rel_clean.at<double>(1, 1) = cos(delta_yaw);
+
+  T_rel_clean.at<double>(0, 3) = T_move.at<double>(0, 3);
+  T_rel_clean.at<double>(1, 3) = T_move.at<double>(1, 3);
+  T_rel_clean.at<double>(2, 3) = 0.0;
+
+  world_pose_ = world_pose_ * T_rel_clean;
 
   nav_msgs::msg::Odometry odom;
   odom.header.frame_id = "odom";
+  odom.header.stamp = get_clock()->now();
   odom.child_frame_id = "base_link";
-
-  // T_rel is the transform from current to previous frame
-  // Translation components:
-  double dx = T_rel.at<double>(0, 3);
-  double dy = T_rel.at<double>(1, 3);
-  double dz = T_rel.at<double>(2, 3);
 
   // Linear Velocity (v = distance / time)
   // Note: These are unitless/scaled by 1.0 until scale is applied
-  odom.twist.twist.linear.x = dx / dt;
-  odom.twist.twist.linear.y = dy / dt;
-  odom.twist.twist.linear.z = dz / dt;
+  odom.twist.twist.linear.x = T_rel_clean.at<double>(0, 3) / dt;
+  odom.twist.twist.linear.y = T_rel_clean.at<double>(1, 3) / dt;
+  odom.twist.twist.linear.z = 0.0;
+  odom.twist.twist.angular.z = delta_yaw / dt;
 
-  // Angular Velocity (Simplified from Rotation Matrix)
-  // Using small angle approximation or extracting Euler angles
-  cv::Mat R_rel = T_rel(cv::Rect(0, 0, 3, 3));
-  double roll = atan2(R_rel.at<double>(2,1), R_rel.at<double>(2,2));
-  double pitch = atan2(-R_rel.at<double>(2,0), sqrt(pow(R_rel.at<double>(2,1),2) + pow(R_rel.at<double>(2,2),2)));
-  double yaw = atan2(R_rel.at<double>(1,0), R_rel.at<double>(0,0));
-
-  odom.twist.twist.angular.x = roll / dt;
-  odom.twist.twist.angular.y = pitch / dt;
-  odom.twist.twist.angular.z = yaw / dt;
-
-  // Extract Translation
+  // --- Position ---
   odom.pose.pose.position.x = world_pose_.at<double>(0, 3);
   odom.pose.pose.position.y = world_pose_.at<double>(1, 3);
-  odom.pose.pose.position.z = world_pose_.at<double>(2, 3);
+  odom.pose.pose.position.z = 0.0;
 
-  // Extract Rotation Matrix to Quaternion
-  cv::Mat R = world_pose_(cv::Rect(0, 0, 3, 3));
-  double trace = R.at<double>(0,0) + R.at<double>(1,1) + R.at<double>(2,2);
-    
-  // Simple conversion logic (or use tf2::Quaternion)
-  double qw = sqrt(1.0 + trace) / 2.0;
-  odom.pose.pose.orientation.w = qw;
-  odom.pose.pose.orientation.x = (R.at<double>(2,1) - R.at<double>(1,2)) / (4.0 * qw);
-  odom.pose.pose.orientation.y = (R.at<double>(0,2) - R.at<double>(2,0)) / (4.0 * qw);
-  odom.pose.pose.orientation.z = (R.at<double>(1,0) - R.at<double>(0,1)) / (4.0 * qw);
+  // Extract Translation
+  cv::Mat R_world = world_pose_(cv::Rect(0, 0, 3, 3));
+  double global_yaw = atan2(R_world.at<double>(1, 0), R_world.at<double>(0, 0));
+
+  // Convert Yaw to Quaternion: [x=0, y=0, z=sin(yaw/2), w=cos(yaw/2)]
+  odom.pose.pose.orientation.x = 0.0;
+  odom.pose.pose.orientation.y = 0.0;
+  odom.pose.pose.orientation.z = sin(global_yaw / 2.0);
+  odom.pose.pose.orientation.w = cos(global_yaw / 2.0);
 
   odom_pub_->publish(odom);
 }
@@ -135,29 +144,25 @@ FeatureMethod::FeatureMethod()
 
 void FeatureMethod::compute(const cv::Mat & img, cv::Mat & img_match)
 {
-  curr_keypoints_.clear(); // New member variable
-  detector_->detect(img, curr_keypoints_);
-  cv::Mat descriptors;
-  descriptor_->compute(img, curr_keypoints_, descriptors);
+  curr_image_ = img.clone();
+  curr_keypoints_.clear();
+  detector_->detect(curr_image_, curr_keypoints_);
+  curr_descriptor_ = cv::Mat(); // clear previous
+  descriptor_->compute(curr_image_, curr_keypoints_, curr_descriptor_);
 
   if (prev_image_.empty()) {
-    prev_image_ = img.clone();
-    prev_keypoints_ = curr_keypoints_;
-    prev_descriptor_ = descriptors;
+    // Initialize if first frame
+    update();
     return;
   }
 
-  // Feature matching using Hamming distance
   std::vector<cv::DMatch> matches;
-  matcher_->match(prev_descriptor_, descriptors, matches);
+  matcher_->match(prev_descriptor_, curr_descriptor_, matches);
 
-  // sort and remove outliers
-  auto min_max = std::minmax_element(
-    matches.begin(), matches.end(),
-    [](const cv::DMatch & m1, const cv::DMatch & m2) {
-      return m1.distance < m2.distance;
-    });
+  auto min_max = std::minmax_element(matches.begin(), matches.end(),
+    [](const cv::DMatch & m1, const cv::DMatch & m2) { return m1.distance < m2.distance; });
   double min_dist = min_max.first->distance;
+
   good_matches_.clear();
   for(const auto& m : matches) {
     if(m.distance <= std::max(2 * min_dist, 30.0)) {
@@ -165,34 +170,40 @@ void FeatureMethod::compute(const cv::Mat & img, cv::Mat & img_match)
     }
   }
 
-  // Draw the results
-  cv::drawMatches(
-    prev_image_, prev_keypoints_, img, curr_keypoints_, good_matches_, img_match);
-
-  // Update previous frame data
-  prev_image_ = img.clone();
-  prev_keypoints_ = curr_keypoints_;
-  prev_descriptor_ = descriptors;
+  cv::drawMatches(prev_image_, prev_keypoints_, curr_image_, curr_keypoints_, good_matches_, img_match);
 }
 
 cv::Mat FeatureMethod::getTransform(const cv::Mat & K)
 {
-  if (good_matches_.size() < 8) return cv::Mat::eye(4, 4, CV_64F);
+  if (good_matches_.size() < 10) return cv::Mat::eye(4, 4, CV_64F);
 
   std::vector<cv::Point2f> p1, p2;
-  for(const auto & m : good_matches_) {
-    p1.push_back(prev_keypoints_[m.queryIdx].pt);
+  double total_dist = 0;
+  for (const auto & m : good_matches_) {
+    p1.push_back(prev_keypoints_[m.queryIdx].pt); 
     p2.push_back(curr_keypoints_[m.trainIdx].pt);
+    total_dist += cv::norm(p1.back() - p2.back());
   }
+
+  double avg_dist = total_dist / good_matches_.size();
+  if (avg_dist < 1.0) return cv::Mat::eye(4, 4, CV_64F);
 
   cv::Mat R, t, mask;
   cv::Mat E = cv::findEssentialMat(p1, p2, K, cv::RANSAC, 0.999, 1.0, mask);
+
   cv::recoverPose(E, p1, p2, K, R, t, mask);
 
   cv::Mat T = cv::Mat::eye(4, 4, CV_64F);
   R.copyTo(T(cv::Rect(0, 0, 3, 3)));
   t.copyTo(T(cv::Rect(3, 0, 1, 3)));
   return T;
+}
+
+void FeatureMethod::update()
+{
+  prev_image_ = curr_image_.clone();
+  prev_keypoints_ = curr_keypoints_;
+  prev_descriptor_ = curr_descriptor_.clone();
 }
 
 DirectMethod::DirectMethod()
@@ -202,9 +213,10 @@ DirectMethod::DirectMethod()
 
 void DirectMethod::compute(const cv::Mat & img, cv::Mat & img_match)
 {
+  curr_image_ = img.clone();
+
   if (prev_image_.empty()) {
-    prev_image_ = img.clone();
-    detector_->detect(prev_image_, prev_keypoints_);
+    update();
     return;
   }
 
@@ -215,39 +227,64 @@ void DirectMethod::compute(const cv::Mat & img, cv::Mat & img_match)
   status_.clear();
   std::vector<float> error;
 
-  cv::calcOpticalFlowPyrLK(prev_image_, img, pts_prev_, pts_curr_, status_, error);
+  // Calculate flow
+  if (!pts_prev_.empty()) {
+      cv::calcOpticalFlowPyrLK(prev_image_, curr_image_, pts_prev_, pts_curr_, status_, error);
+  }
 
-  img.copyTo(img_match);
+  // Visualization
+  curr_image_.copyTo(img_match);
   for (size_t i = 0; i < pts_curr_.size(); i++) {
-    if (status_[i]) {
+    if (i < status_.size() && status_[i]) {
       cv::circle(img_match, pts_curr_[i], 2, cv::Scalar(0, 250, 0), 2);
       cv::line(img_match, pts_prev_[i], pts_curr_[i], cv::Scalar(0, 250, 0));
     }
   }
+}
 
-  // Update previous frame data
-  prev_image_ = img.clone();
+void DirectMethod::update()
+{
+  prev_image_ = curr_image_.clone();
   detector_->detect(prev_image_, prev_keypoints_);
 }
 
 cv::Mat DirectMethod::getTransform(const cv::Mat & K) {
   std::vector<cv::Point2f> valid_prev, valid_curr;
+  double total_dist = 0;
+
+  // 1. Filter points based on the status from calcOpticalFlowPyrLK
   for (size_t i = 0; i < status_.size(); i++) {
     if (status_[i]) {
       valid_prev.push_back(pts_prev_[i]);
       valid_curr.push_back(pts_curr_[i]);
+      total_dist += cv::norm(pts_curr_[i] - pts_prev_[i]);
     }
   }
 
-  if (valid_prev.size() < 8) return cv::Mat::eye(4, 4, CV_64F);
+  // 2. Stability Check: Need at least 8 points for the Essential Matrix
+  if (valid_prev.size() < 10) {
+    return cv::Mat::eye(4, 4, CV_64F);
+  }
 
+  // 3. Motion Threshold: Prevent "Ghost" movement when stopped
+  double avg_dist = total_dist / valid_prev.size();
+  if (avg_dist < 1.0) { // Slightly lower threshold than features as flow is smoother
+    return cv::Mat::eye(4, 4, CV_64F);
+  }
+
+  // 4. Robust Pose Recovery using RANSAC
   cv::Mat R, t, mask;
+  // findEssentialMat with RANSAC removes points that don't follow the "camera motion"
   cv::Mat E = cv::findEssentialMat(valid_prev, valid_curr, K, cv::RANSAC, 0.999, 1.0, mask);
+  
+  // recoverPose uses the RANSAC mask to calculate R and t only from valid "inliers"
   cv::recoverPose(E, valid_prev, valid_curr, K, R, t, mask);
 
+  // 5. Build the 4x4 matrix
   cv::Mat T = cv::Mat::eye(4, 4, CV_64F);
   R.copyTo(T(cv::Rect(0, 0, 3, 3)));
   t.copyTo(T(cv::Rect(3, 0, 1, 3)));
+
   return T;
 }
 }  // namespace bumperbot_vision
