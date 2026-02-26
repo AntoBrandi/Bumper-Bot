@@ -12,7 +12,6 @@ find_package(image_transport REQUIRED)
 find_package(point_cloud_transport REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_geometry REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -23,7 +22,6 @@ set(dependencies
   point_cloud_transport
   message_filters
   sensor_msgs
-  nav_msgs
   cv_bridge
   image_geometry
   OpenCV
@@ -46,10 +44,15 @@ add_executable(stereo_vision
 )
 ament_target_dependencies(stereo_vision ${dependencies})
 
-add_executable(visual_odometry
-  src/visual_odometry.cpp
+add_executable(feature_detector
+  src/feature_detector.cpp
 )
-ament_target_dependencies(visual_odometry ${dependencies})
+ament_target_dependencies(feature_detector ${dependencies})
+
+add_executable(optical_flow
+  src/optical_flow.cpp
+)
+ament_target_dependencies(optical_flow ${dependencies})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -61,14 +64,16 @@ endif()
 install(TARGETS
   undistort_image
   stereo_vision
-  visual_odometry
+  feature_detector
+  optical_flow
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(PROGRAMS
   ${PROJECT_NAME}/undistort_image.py
   ${PROJECT_NAME}/stereo_vision.py
-  ${PROJECT_NAME}/visual_odometry.py
+  ${PROJECT_NAME}/feature_detector.py
+  ${PROJECT_NAME}/optical_flow.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

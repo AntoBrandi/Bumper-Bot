@@ -4,13 +4,14 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge
+import numpy as np
 
 import cv2
 import message_filters
 
-class VisualOdometry(Node):
+class FeatureDetector(Node):
     def __init__(self):
-        super().__init__('visual_odometry')
+        super().__init__('feature_detector')
 
         self.prev_image = None
         self.prev_keypoints = None
@@ -36,6 +37,13 @@ class VisualOdometry(Node):
             Image, "matches", qos_profile_sensor_data)
 
     def image_callback(self, image_msg, info_msg):
+        # Camera intrinsic parameters
+        self.K = np.array([
+            [info_msg.k[0], info_msg.k[1], info_msg.k[2]],
+            [info_msg.k[3], info_msg.k[4], info_msg.k[5]],
+            [info_msg.k[6], info_msg.k[7], info_msg.k[8]]
+        ], dtype=np.float64)
+
         # Convert ROS Image to OpenCV
         try:
             current_image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
@@ -90,16 +98,31 @@ class VisualOdometry(Node):
         except Exception as e:
              self.get_logger().error(f"Failed to publish matches: {e}")
 
+        R, t = self.estimatePose(keypoints, good_matches)
+        self.get_logger().info(f"Estimated Rotation:\n{R}\nEstimated Translation:\n{t}")
+
         # Update previous frame data
         self.prev_image = current_image
         self.prev_keypoints = keypoints
         self.prev_descriptors = descriptors
 
+    def estimatePose(self, curr_keypoints, matches):
+        points_1 = np.array([self.prev_keypoints[m.queryIdx].pt for m in matches], dtype=np.float32)
+        points_2 = np.array([curr_keypoints[m.trainIdx].pt for m in matches], dtype=np.float32)
+        
+        # Calculate the Essential Matrix
+        essential_matrix, _ = cv2.findEssentialMat(points_1, points_2, self.K)
+
+        # Calculate the Homography Matrix
+        homography_matrix, _ = cv2.findHomography(points_1, points_2, cv2.RANSAC, 3)
+        _, R, t, _ = cv2.recoverPose(essential_matrix, points_1, points_2, self.K)
+        return R, t
+
 def main(args=None):
     rclpy.init(args=args)
-    visual_odometry = VisualOdometry()
-    rclpy.spin(visual_odometry)
-    visual_odometry.destroy_node()
+    feature_detector = FeatureDetector()
+    rclpy.spin(feature_detector)
+    feature_detector.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
