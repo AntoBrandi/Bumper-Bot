@@ -12,9 +12,14 @@ find_package(image_transport REQUIRED)
 find_package(point_cloud_transport REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(bumperbot_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_geometry REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(DBoW3 REQUIRED)
 
 set(dependencies
   rclcpp
@@ -24,7 +29,11 @@ set(dependencies
   sensor_msgs
   cv_bridge
   image_geometry
+  geometry_msgs
   OpenCV
+  std_srvs
+  tf2_ros
+  bumperbot_msgs
 )
 
 ament_python_install_package(${PROJECT_NAME})
@@ -32,6 +41,7 @@ ament_python_install_package(${PROJECT_NAME})
 include_directories(
   include
   ${OpenCV_INCLUDE_DIRS}
+  ${DBoW3_INCLUDE_DIRS}
 )
 
 add_executable(undistort_image
@@ -54,6 +64,15 @@ add_executable(optical_flow
 )
 ament_target_dependencies(optical_flow ${dependencies})
 
+add_executable(bag_of_words
+  src/bag_of_words.cpp
+)
+ament_target_dependencies(bag_of_words ${dependencies})
+target_link_libraries(bag_of_words
+  ${OpenCV_LIBS}
+  ${DBoW3_LIBRARIES}
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
@@ -66,6 +85,7 @@ install(TARGETS
   stereo_vision
   feature_detector
   optical_flow
+  bag_of_words
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -74,6 +94,7 @@ install(PROGRAMS
   ${PROJECT_NAME}/stereo_vision.py
   ${PROJECT_NAME}/feature_detector.py
   ${PROJECT_NAME}/optical_flow.py
+  ${PROJECT_NAME}/bag_of_words.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
