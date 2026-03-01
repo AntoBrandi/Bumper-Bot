@@ -159,7 +159,7 @@
       <update_rate>15.0</update_rate>
       <visualize>true</visualize>
       <topic>/left_camera/image_raw</topic>
-      <gz_frame_id>left_camera_link</gz_frame_id>
+      <gz_frame_id>left_camera_optical_link</gz_frame_id>
       <camera name="left_camera">
         <horizontal_fov>1.27409</horizontal_fov>
         <vertical_fov>0.872665</vertical_fov>
@@ -187,7 +187,7 @@
       <update_rate>15.0</update_rate>
       <visualize>true</visualize>
       <topic>/right_camera/image_raw</topic>
-      <gz_frame_id>right_camera_link</gz_frame_id>
+      <gz_frame_id>right_camera_optical_link</gz_frame_id>
       <camera name="right_camera">
         <horizontal_fov>1.27409</horizontal_fov>
         <vertical_fov>0.872665</vertical_fov>

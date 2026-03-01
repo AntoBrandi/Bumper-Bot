@@ -260,12 +260,28 @@
     <origin xyz="0.0 -0.06 0.0" rpy="0.0 0.0 0.0"/>
   </joint>
 
+  <link name="right_camera_optical_link"/>
+  
+  <joint name="right_camera_optical_joint" type="fixed">
+    <parent link="right_camera_link"/>
+    <child link="right_camera_optical_link"/>
+    <origin xyz="0 0 0" rpy="-1.571 0 -1.571"/>
+  </joint>
+
   <link name="left_camera_link"/>
 
   <joint name ="left_camera_joint" type="fixed">
     <parent link="camera_link"/>
     <child link = "left_camera_link"/>
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+  </joint>
+
+  <link name="left_camera_optical_link"/>
+  
+  <joint name="left_camera_optical_joint" type="fixed">
+    <parent link="left_camera_link"/>
+    <child link="left_camera_optical_link"/>
+    <origin xyz="0 0 0" rpy="-1.571 0 -1.571"/>
   </joint>
 
   <material name="blue">
