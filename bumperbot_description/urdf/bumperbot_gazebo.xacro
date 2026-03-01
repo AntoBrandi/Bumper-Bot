@@ -169,14 +169,14 @@
           <format>R8G8B8</format>
         </image>
         <!-- Simulate Barrel distorsion -->
-        <distortion>
+        <!-- <distortion>
           <k1>-0.05</k1>
           <k2>0.005</k2>
           <k3>0.0</k3>
           <p1>0.0</p1>
           <p2>0.0</p2>
           <center>0.5 0.5</center>
-        </distortion>
+        </distortion> -->
       </camera>
     </sensor>
   </gazebo>
@@ -196,15 +196,24 @@
           <height>720</height>
           <format>R8G8B8</format>
         </image>
+        <!-- Simulate Barrel distorsion -->
+        <!-- <distortion>
+          <k1>-0.05</k1>
+          <k2>0.005</k2>
+          <k3>0.0</k3>
+          <p1>0.0</p1>
+          <p2>0.0</p2>
+          <center>0.5 0.5</center>
+        </distortion> -->
         <!-- Simulate Pincushion distorsion -->
-        <distortion>
+        <!-- <distortion>
           <k1>0.05</k1>
           <k2>0.005</k2>
           <k3>0.0</k3>
           <p1>0.0</p1>
           <p2>0.0</p2>
           <center>0.5 0.5</center>
-        </distortion>
+        </distortion> -->
       </camera>
     </sensor>
   </gazebo>
