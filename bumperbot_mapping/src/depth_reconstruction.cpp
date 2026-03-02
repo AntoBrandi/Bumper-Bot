@@ -6,6 +6,8 @@
 #include "pcl_ros/transforms.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 
+#include "octomap_msgs/conversions.h"
+
 namespace bumperbot_mapping
 {
 DepthReconstruction::DepthReconstruction(const std::string & name)
@@ -13,6 +15,8 @@ DepthReconstruction::DepthReconstruction(const std::string & name)
 {
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
+    octree_ = std::make_shared<octomap::ColorOcTree>(0.05);
 }
 
 void DepthReconstruction::initialize()
@@ -22,6 +26,8 @@ void DepthReconstruction::initialize()
         "camera/points", 10,
         std::bind(&DepthReconstruction::cloudCallback, this, std::placeholders::_1));
     merged_cloud_pub_ = pct_->advertise("merged_cloud", 10);
+
+    octomap_pub_ = create_publisher<octomap_msgs::msg::Octomap>("octomap", 10);
 }
 
 void DepthReconstruction::cloudCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & cloud_msg)
@@ -69,6 +75,18 @@ void DepthReconstruction::cloudCallback(const sensor_msgs::msg::PointCloud2::Con
     merged_msg.header.frame_id = "odom";
     merged_msg.header.stamp = now();
     merged_cloud_pub_.publish(merged_msg);
+
+    // Convert OctoMap to ROS Message and publish
+    for (const auto& p : merged_cloud_.points) {
+        octree_->updateNode(octomap::point3d(p.x, p.y, p.z), true);
+        octree_->integrateNodeColor(p.x, p.y, p.z, p.r, p.g, p.b);
+    }
+    octree_->updateInnerOccupancy();
+    octomap_msgs::msg::Octomap octomap_msg;
+    octomap_msgs::fullMapToMsg(*octree_, octomap_msg);
+    octomap_msg.header.frame_id = "map";
+    octomap_msg.header.stamp = now();
+    octomap_pub_->publish(octomap_msg);
 }
 }  // namespace bumperbot_mapping
 
