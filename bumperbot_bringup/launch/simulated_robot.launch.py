@@ -8,10 +8,20 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    use_slam = LaunchConfiguration("use_slam")
+    localization = LaunchConfiguration("localization")
+    slam = LaunchConfiguration("slam")
+    rtabmap = LaunchConfiguration("rtabmap")
 
-    use_slam_arg = DeclareLaunchArgument(
-        "use_slam",
+    localization_arg = DeclareLaunchArgument(
+        "localization",
+        default_value="true"
+    )
+    slam_arg = DeclareLaunchArgument(
+        "slam",
+        default_value="false"
+    )
+    rtabmap_arg = DeclareLaunchArgument(
+        "rtabmap",
         default_value="false"
     )
 
@@ -52,7 +62,7 @@ def generate_launch_description():
             "launch",
             "global_localization.launch.py"
         ),
-        condition=UnlessCondition(use_slam)
+        condition=IfCondition(localization)
     )
 
     slam = IncludeLaunchDescription(
@@ -61,7 +71,16 @@ def generate_launch_description():
             "launch",
             "slam.launch.py"
         ),
-        condition=IfCondition(use_slam)
+        condition=IfCondition(slam)
+    )
+
+    rtabmap = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("bumperbot_mapping"),
+            "launch",
+            "rtabmap.launch.py"
+        ),
+        condition=IfCondition(rtabmap)
     )
 
     navigation = IncludeLaunchDescription(
@@ -86,12 +105,15 @@ def generate_launch_description():
     )
     
     return LaunchDescription([
-        use_slam_arg,
+        localization_arg,
+        slam_arg,
+        rtabmap_arg,
         gazebo,
         controller,
         joystick,
         localization,
         slam,
+        rtabmap,
         navigation,
         rviz,
     ])
