@@ -33,3 +33,11 @@ rtabmap:
     Grid/3D: 'true'
     stereo_to_depth: true
     Grid/MaxObstacleHeight: '2.0' # ignore ceiling points
+
+    # Depth Noise reduction
+    Grid/RayTracing: 'true'
+    map_empty_ray_tracing: true
+    Grid/NoiseFilteringRadius: '0.1'
+    Grid/NoiseFilteringMinNeighbors: '5'
+    Grid/MinClusterSize: '20'
+

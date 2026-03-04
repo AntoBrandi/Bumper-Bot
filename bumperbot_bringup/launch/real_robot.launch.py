@@ -8,20 +8,10 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    localization = LaunchConfiguration("localization")
-    slam = LaunchConfiguration("slam")
-    rtabmap = LaunchConfiguration("rtabmap")
+    use_slam = LaunchConfiguration("use_slam")
 
-    localization_arg = DeclareLaunchArgument(
-        "localization",
-        default_value="true"
-    )
-    slam_arg = DeclareLaunchArgument(
-        "slam",
-        default_value="false"
-    )
-    rtabmap_arg = DeclareLaunchArgument(
-        "rtabmap",
+    use_slam_arg = DeclareLaunchArgument(
+        "use_slam",
         default_value="false"
     )
 
@@ -79,7 +69,7 @@ def generate_launch_description():
             "launch",
             "global_localization.launch.py"
         ),
-        condition=IfCondition(localization)
+        condition=UnlessCondition(use_slam)
     )
 
     slam = IncludeLaunchDescription(
@@ -88,16 +78,7 @@ def generate_launch_description():
             "launch",
             "slam.launch.py"
         ),
-        condition=IfCondition(slam)
-    )
-
-    rtabmap = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("bumperbot_mapping"),
-            "launch",
-            "rtabmap.launch.py"
-        ),
-        condition=IfCondition(rtabmap)
+        condition=IfCondition(use_slam)
     )
 
     navigation = IncludeLaunchDescription(
@@ -109,16 +90,13 @@ def generate_launch_description():
     )
     
     return LaunchDescription([
-        localization_arg,
-        slam_arg,
-        rtabmap_arg,
+        use_slam_arg,
         hardware_interface,
         laser_driver,
         controller,
         joystick,
         imu_driver_node,
-        localization,
+        # localization,
         slam,
-        rtabmap,
         navigation
     ])
