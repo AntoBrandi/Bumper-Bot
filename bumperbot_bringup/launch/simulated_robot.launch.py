@@ -90,7 +90,7 @@ def generate_launch_description():
         gazebo,
         controller,
         joystick,
-        # localization,
+        localization,
         slam,
         navigation,
         rviz,

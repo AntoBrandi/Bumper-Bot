@@ -96,7 +96,7 @@ def generate_launch_description():
         controller,
         joystick,
         imu_driver_node,
-        # localization,
+        localization,
         slam,
         navigation
     ])

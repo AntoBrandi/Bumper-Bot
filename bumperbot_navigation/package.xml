@@ -9,6 +9,14 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>rclcpp</depend>
+  <depend>image_transport</depend>
+  <depend>message_filters</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>opencv</depend>
+
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>bumperbot_planning</exec_depend>
   <exec_depend>nav2_controller</exec_depend>
