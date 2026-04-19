@@ -1,0 +1,43 @@
+stereo_odometry:
+  ros__parameters:
+    frame_id: base_footprint
+    odom_frame_id: odom
+    publish_tf: true
+    wait_for_transform: 0.3
+    wait_imu_to_init: true
+    always_check_imu_tf: false
+    keep_color: true
+    publish_null_when_lost: false
+    Reg/Force3DoF: 'true'
+    guess_frame_id: wheel_odom
+    Odom/ResetCountdown: '10'
+    Odom/GuessMotion: 'true'
+
+rtabmap:
+  ros__parameters:
+    frame_id: base_footprint
+    odom_frame_id: odom
+    map_frame_id: map
+    subscribe_depth: false
+    subscribe_stereo: true
+    subscribe_rgb: false
+    publish_tf: true
+    tf_tolerance: 0.3
+    wait_for_transform: 0.3
+    # database_path: /home/alien/.ros/small_office_rtabmap.db
+    delete_db_on_start: true  # Enough to use the old map
+    subscribe_scan: false
+    Reg/Force3DoF: 'true'
+    Reg/Strategy: '0'
+    Grid/Sensor: '1'  # Use depth data to create grid map
+    Grid/3D: 'true'
+    stereo_to_depth: true
+    Grid/MaxObstacleHeight: '2.0' # ignore ceiling points
+
+    # Depth Noise reduction
+    Grid/RayTracing: 'true'
+    map_empty_ray_tracing: true
+    Grid/NoiseFilteringRadius: '0.1'
+    Grid/NoiseFilteringMinNeighbors: '5'
+    Grid/MinClusterSize: '20'
+

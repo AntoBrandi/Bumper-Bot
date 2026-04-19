@@ -35,6 +35,7 @@ bumperbot_controller:
 
     # Base frame_id
     base_frame_id: base_footprint #default: base_link
+    odom_frame_id: odom
 
     # Publish limited velocity
     publish_limited_velocity: true

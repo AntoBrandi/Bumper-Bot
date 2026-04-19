@@ -220,10 +220,68 @@
   </link>
 
   <joint name="laser_joint" type="fixed">
-    <origin xyz="-0.0050526 -0.0023221 0.1208" rpy="0 0 3.14" />
+    <origin xyz="-0.0050526 -0.0023221 0.1208" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="laser_link" />
     <axis xyz="0 0 0" />
+  </joint>
+
+  <link name="camera_link">
+    <mass value="0.0001" />
+    <inertia ixx="0.001" ixy="0.001" ixz="0.001"
+            iyy="0.001" iyz="0.001"
+            izz="0.001" />
+    <visual>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://bumperbot_description/meshes/stereo_camera.STL"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://bumperbot_description/meshes/stereo_camera.STL"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name ="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link = "camera_link"/>
+    <origin xyz="0.05 0.03 0.095" rpy="0.0 -0.35 0.0"/>
+  </joint>
+
+  <link name="right_camera_link"/>
+
+  <joint name ="right_camera_joint" type="fixed">
+    <parent link="camera_link"/>  
+    <child link = "right_camera_link"/>
+    <origin xyz="0.0 -0.06 0.0" rpy="0.0 0.0 0.0"/>
+  </joint>
+
+  <link name="right_camera_optical_link"/>
+  
+  <joint name="right_camera_optical_joint" type="fixed">
+    <parent link="right_camera_link"/>
+    <child link="right_camera_optical_link"/>
+    <origin xyz="0 0 0" rpy="-1.571 0 -1.571"/>
+  </joint>
+
+  <link name="left_camera_link"/>
+
+  <joint name ="left_camera_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link = "left_camera_link"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+  </joint>
+
+  <link name="left_camera_optical_link"/>
+  
+  <joint name="left_camera_optical_joint" type="fixed">
+    <parent link="left_camera_link"/>
+    <child link="left_camera_optical_link"/>
+    <origin xyz="0 0 0" rpy="-1.571 0 -1.571"/>
   </joint>
 
   <material name="blue">
@@ -237,6 +295,9 @@
   </material>
   <material name="dark_grey">
     <color rgba="0.3 0.3 0.3 1"/>
+  </material>
+  <material name="green">
+    <color rgba="0 1 0 1"/>
   </material>
 
 </robot>

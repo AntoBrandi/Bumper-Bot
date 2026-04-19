@@ -152,4 +152,70 @@
     </sensor>
   </gazebo>
 
+  <!-- RGB Camera -->
+  <gazebo reference="left_camera_link">
+    <sensor name="left_camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>15.0</update_rate>
+      <visualize>true</visualize>
+      <topic>/left_camera/image_raw</topic>
+      <gz_frame_id>left_camera_optical_link</gz_frame_id>
+      <camera name="left_camera">
+        <horizontal_fov>1.27409</horizontal_fov>
+        <vertical_fov>0.872665</vertical_fov>
+        <image>
+          <width>1280</width>
+          <height>720</height>
+          <format>R8G8B8</format>
+        </image>
+        <!-- Simulate Barrel distorsion -->
+        <!-- <distortion>
+          <k1>-0.05</k1>
+          <k2>0.005</k2>
+          <k3>0.0</k3>
+          <p1>0.0</p1>
+          <p2>0.0</p2>
+          <center>0.5 0.5</center>
+        </distortion> -->
+      </camera>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="right_camera_link">
+    <sensor name="right_camera" type="camera">
+      <always_on>true</always_on>
+      <update_rate>15.0</update_rate>
+      <visualize>true</visualize>
+      <topic>/right_camera/image_raw</topic>
+      <gz_frame_id>right_camera_optical_link</gz_frame_id>
+      <camera name="right_camera">
+        <horizontal_fov>1.27409</horizontal_fov>
+        <vertical_fov>0.872665</vertical_fov>
+        <image>
+          <width>1280</width>
+          <height>720</height>
+          <format>R8G8B8</format>
+        </image>
+        <!-- Simulate Barrel distorsion -->
+        <!-- <distortion>
+          <k1>-0.05</k1>
+          <k2>0.005</k2>
+          <k3>0.0</k3>
+          <p1>0.0</p1>
+          <p2>0.0</p2>
+          <center>0.5 0.5</center>
+        </distortion> -->
+        <!-- Simulate Pincushion distorsion -->
+        <!-- <distortion>
+          <k1>0.05</k1>
+          <k2>0.005</k2>
+          <k3>0.0</k3>
+          <p1>0.0</p1>
+          <p2>0.0</p2>
+          <center>0.5 0.5</center>
+        </distortion> -->
+      </camera>
+    </sensor>
+  </gazebo>
+
 </robot>

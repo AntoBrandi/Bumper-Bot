@@ -62,7 +62,7 @@ def generate_launch_description():
                 PythonLaunchDescriptionSource([os.path.join(
                     get_package_share_directory("ros_gz_sim"), "launch"), "/gz_sim.launch.py"]),
                 launch_arguments={
-                    "gz_args": PythonExpression(["'", world_path, " -v 4 -r'"])
+                    "gz_args": PythonExpression(["'", world_path, " -v 4 -r --render-engine ogre'"])
                 }.items()
              )
 
@@ -80,11 +80,15 @@ def generate_launch_description():
         arguments=[
             "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
             "/imu@sensor_msgs/msg/Imu[gz.msgs.IMU",
-            "/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan"
+            "/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan",
+            "/left_camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/left_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
+            "/right_camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/right_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
         ],
         remappings=[
             ('/imu', '/imu/out'),
-        ]
+        ],
     )
 
     return LaunchDescription([
